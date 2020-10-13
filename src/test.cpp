@@ -9,17 +9,13 @@ class Item {
     public:
         int value;
         int cost;
-    private:
-        int _id;
     public:
-        Item(int v, int c, int i) : value{v}, cost{c}, _id{i} {}
-        Item(const Item & item) : value{item.value}, cost{item.cost}, _id{item._id} {}
+        Item(int v, int c) : value{v}, cost{c} {}
+        Item(const Item & item) : value{item.value}, cost{item.cost} {}
         double getRatio() const { 
             if(cost == 0) return std::numeric_limits<double>::max();
             return value / (double)cost;
         }
-        void setId(int i) { _id = i; } 
-        int id() { return _id; } 
         bool operator<(const Item& other) const { return getRatio() > other.getRatio(); }
 };
 
@@ -33,60 +29,65 @@ class Instance {
         void setBudget(int b) { budget = b; }
         int getBudget() const { return budget; }
 
-        void addItem(int v, int w) { items.push_back(Item(v, w, items.size())); }
+        void addItem(int v, int w) { items.push_back(Item(v, w)); }
         void clearItems() { items.clear(); }
         int itemCount() const { return items.size(); }
 
         const Item get(int i) const { return items[i]; }
         const Item operator[](int i) const { return get(i); }
 
-        void sortByRatios() {
-            std::sort(items.begin(), items.end());
-            for(int i=0; i<static_cast<int>(items.size()); ++i) {
-                items[i].setId(i);
-            }
-        }
+        void sortByRatios() { std::sort(items.begin(), items.end()); }
 };
 
 class Solution {
     private:
         const Instance & instance;
-        std::vector<bool> taken;
+        std::vector<bool> _taken;
         int total_value;
         int total_cost;
     public:
-        Solution(const Instance & i) : instance(i), taken(i.itemCount()), total_value{0}, total_cost{0} {}
+        Solution(const Instance & i) : instance(i), _taken(i.itemCount()), total_value{0}, total_cost{0} {}
 
         int getValue() { return total_value; }
         int getCost() { return total_cost; }
 
         void take(int i) { 
-            assert(!taken[i]);
-            taken[i] = true;
+            assert(!_taken[i]);
+            _taken[i] = true;
             const Item item = instance[i];
             total_value += item.value;
             total_cost += item.cost;
         }
         void release(int i) { 
-            assert(taken[i]);
-            taken[i] = false;
+            assert(_taken[i]);
+            _taken[i] = false;
             const Item item = instance[i];
             total_value -= item.value;
             total_cost -= item.cost;
         }
 
+        bool taken(int i) { return _taken[i]; }
+
         double computeUpperBound(int from_depth) {
             int current_value = total_value;
             int budget_left = instance.getBudget() - total_cost;
             for(int i=from_depth; i<instance.itemCount(); ++i) {
-                assert(taken[i] == false);
+                assert(!_taken[i]);
                 const Item item = instance[i];
                 if(budget_left - item.cost <= 0)
-                    return current_value + (budget_left / (double)item.cost) * item.value;
+                    return current_value + budget_left * item.getRatio();
                 budget_left -= item.cost;
                 current_value += item.value;
             }
             return current_value;
+        }
+
+        void operator=(const Solution & other) {
+            assert(instance.itemCount() == other.instance.itemCount());
+            for(int i=0; i<instance.itemCount(); ++i)
+                _taken[i] = other._taken[i];
+            total_value = other.total_value;
+            total_cost = other.total_cost;
         }
 };
 
@@ -100,19 +101,19 @@ void fill_instance(const std::filesystem::path & instance_path, Instance & insta
     while(file >> weight >> value) instance.addItem(value, weight);
 }
 
-void branch_and_bound(const Instance & instance, Solution & solution, int depth, int & best_known) {
-    if(solution.getCost() > instance.getBudget()) return; // invalid node
+void branch_and_bound(const Instance & instance, Solution & current_solution, int depth, Solution & best_solution) {
+    if(current_solution.getCost() > instance.getBudget()) return; // invalid node
     if(depth == instance.itemCount()) { // leaf
-        if(best_known < solution.getValue())
-            best_known = solution.getValue();        
+        if(current_solution.getValue() > best_solution.getValue())
+            best_solution = current_solution;        
         return;
     }
-    if(solution.computeUpperBound(depth) < best_known) return; // this node could not be in a better solution
+    if(current_solution.computeUpperBound(depth) < best_solution.getValue()) return; // this node could not be in a better solution
 
-    solution.take(depth);
-    branch_and_bound(instance, solution, depth+1, best_known);
-    solution.release(depth);
-    branch_and_bound(instance, solution, depth+1, best_known);
+    current_solution.take(depth);
+    branch_and_bound(instance, current_solution, depth+1, best_solution);
+    current_solution.release(depth);
+    branch_and_bound(instance, current_solution, depth+1, best_solution);
 }
 
 int main(int argc, const char *argv[]) {
@@ -128,14 +129,12 @@ int main(int argc, const char *argv[]) {
     
     Instance instance;
     fill_instance(instance_path, instance);
-
     instance.sortByRatios();
 
-    int best = 0;
-    Solution solution(instance);
-    branch_and_bound(instance, solution, 0, best);
+    Solution current_solution(instance), best_solution(instance);
+    branch_and_bound(instance, current_solution, 0, best_solution);
 
-    std::cout << best << std::endl;
+    std::cout << best_solution.getValue() << std::endl;
 
     return EXIT_SUCCESS;
 }
