@@ -20,15 +20,19 @@ all: run
 dir: 
 	mkdir -p $(BUILD_DIR)
 
-test: $(OBJ) $(BUILD_DIR)/test.o
+knapstack_bnb: $(OBJ) $(BUILD_DIR)/knapstack_bnb.o
 	$(CC) -o $@$(EXTENSION) $^ $(LDFLAGS)
 
-run: dir test
-	./test.out instances/sac0
-	./test.out instances/sac1
-	./test.out instances/sac2
-	./test.out instances/sac3
-	./test.out instances/sac4
+run: dir knapstack_bnb
+	./knapstack_bnb.out instances/sac0
+	./knapstack_bnb.out instances/sac1
+	./knapstack_bnb.out instances/sac2
+	./knapstack_bnb.out instances/sac3
+	./knapstack_bnb.out instances/sac4
+
+test_knapstack_bnb: $(OBJ) $(BUILD_DIR)/test_knapstack_bnb.o
+	$(CC) -o $@$(EXTENSION) $^ $(LDFLAGS)
+
 
 
 clean:

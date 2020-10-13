@@ -30,13 +30,12 @@ class Instance {
         int getBudget() const { return budget; }
 
         void addItem(int v, int w) { items.push_back(Item(v, w)); }
-        void clearItems() { items.clear(); }
         int itemCount() const { return items.size(); }
 
-        const Item get(int i) const { return items[i]; }
-        const Item operator[](int i) const { return get(i); }
+        const Item getItem(int i) const { return items[i]; }
+        const Item operator[](int i) const { return getItem(i); }
 
-        void sortByRatios() { std::sort(items.begin(), items.end()); }
+        void sortByRatios() { std::sort(items.begin(), items.end()); } // implicitly uses operator< of Item
 };
 
 class Solution {
@@ -58,7 +57,7 @@ class Solution {
             total_value += item.value;
             total_cost += item.cost;
         }
-        void release(int i) { 
+        void release(int i) {
             assert(_taken[i]);
             _taken[i] = false;
             const Item item = instance[i];
@@ -66,7 +65,7 @@ class Solution {
             total_cost -= item.cost;
         }
 
-        bool taken(int i) { return _taken[i]; }
+        bool isTaken(int i) { return _taken[i]; }
 
         double computeUpperBound(int from_depth) {
             int current_value = total_value;
@@ -75,7 +74,7 @@ class Solution {
                 assert(!_taken[i]);
                 const Item item = instance[i];
                 if(budget_left - item.cost <= 0)
-                    return current_value + budget_left * item.getRatio();
+                    return (double)current_value + (double)budget_left * item.getRatio();
                 budget_left -= item.cost;
                 current_value += item.value;
             }
@@ -105,11 +104,11 @@ void branch_and_bound(const Instance & instance, Solution & current_solution, in
     if(current_solution.getCost() > instance.getBudget()) return; // invalid node
     if(depth == instance.itemCount()) { // leaf
         if(current_solution.getValue() > best_solution.getValue())
-            best_solution = current_solution;        
+            best_solution = current_solution;  
         return;
     }
-    if(current_solution.computeUpperBound(depth) < best_solution.getValue()) return; // this node could not be in a better solution
-
+    if(current_solution.computeUpperBound(depth) <= best_solution.getValue()) return; // this node could not be in a better solution
+    
     current_solution.take(depth);
     branch_and_bound(instance, current_solution, depth+1, best_solution);
     current_solution.release(depth);
