@@ -49,6 +49,10 @@ namespace Knapstack {
     public:
         Solution(const Instance & i) : instance(i), _taken(i.itemCount()) {}
 
+        void set(const std::vector<bool> & takens) {
+            _taken = takens;
+        }
+
         void add(int i) { _taken[i] = true; }
         void remove(int i) { _taken[i] = false; }
         bool isTaken(int i) { return _taken[i]; }
@@ -95,6 +99,7 @@ namespace Knapstack {
             if(budget_left < 0) return; // invalid node
             if(depth == instance.itemCount()) { // leaf
                 if(value > best_value) {
+                    best_value = value;
                     solution_mutex.lock();
                     // best_solution = current_solution;
                     solution_mutex.unlock();
