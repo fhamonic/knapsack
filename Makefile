@@ -1,43 +1,24 @@
-CC=g++
-CC_NORM=c++17
+MAKEFLAGS += --no-print-directory
 
-SRC_DIR=src
-BUILD_DIR=build
+CPUS?=$(shell getconf _NPROCESSORS_ONLN || echo 1)
 
-INCLUDE_FLAGS=-I include
+BUILD_DIR = build
 
-#-DNDEBUG to silent asserts
-CFLAGS=-g -W -Wall -ansi -pedantic -std=$(CC_NORM) -fconcepts -O2 -flto -march=native -pipe $(INCLUDE_FLAGS)
-LDFLAGS=
+.PHONY: all clean doc
 
-EXTENSION=.out
+all: $(BUILD_DIR)
+	@cd $(BUILD_DIR) && \
+	cmake --build . --parallel $(CPUS)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CC) -o $@ -c $< $(CFLAGS)
-
-all: run
-
-dir: 
-	mkdir -p $(BUILD_DIR)
-
-knapstack_bnb: $(OBJ) $(BUILD_DIR)/knapstack_bnb.o
-	$(CC) -o $@$(EXTENSION) $^ $(LDFLAGS)
-
-run: dir knapstack_bnb
-	./knapstack_bnb.out instances/sac0
-	./knapstack_bnb.out instances/sac1
-	./knapstack_bnb.out instances/sac2
-	./knapstack_bnb.out instances/sac3
-	./knapstack_bnb.out instances/sac4
-
-test_knapstack_bnb: $(OBJ) $(BUILD_DIR)/test_knapstack_bnb.o
-	$(CC) -o $@$(EXTENSION) $^ $(LDFLAGS)
-
-
+$(BUILD_DIR):
+	@mkdir $(BUILD_DIR) && \
+	cd $(BUILD_DIR) && \
+	conan install .. && \
+	cmake -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_BUILD_TYPE=Release -DWARNINGS=ON -DCOMPILE_FOR_NATIVE=ON -DCOMPILE_WITH_LTO=ON ..
 
 clean:
-	rm -rf $(BUILD_DIR)/*.o
+	@rm -rf $(BUILD_DIR)
 
-mrproper: clean
-	rm -rf $(BUILD_DIR)
-	rm -rf -f *$(EXTENSION)
+doc:
+	doxywizard $$PWD/doc/Doxyfile
+	xdg-open doc/html/index.html 

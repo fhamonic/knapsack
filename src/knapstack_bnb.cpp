@@ -8,86 +8,107 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <numeric>
+
+#include <range/v3/all.hpp>
 
 namespace Knapstack {
-    class Item {
-    public:
-        int value;
-        int cost;
-    public:
-        Item(int v, int c) : value{v}, cost{c} {}
-        Item(const Item & item) : value{item.value}, cost{item.cost} {}
-        double getRatio() const { 
-            if(cost == 0) return std::numeric_limits<double>::max();
-            return value / (double)cost;
-        }
-        bool operator<(const Item& other) const { return getRatio() > other.getRatio(); }
-    };
-
+    template <typename Value, typename Cost>
     class Instance {
+    public:
+        class Item {
+        public:
+            Value value;
+            Cost cost;
+        public:
+            Item(Value v, Cost c) : value{v}, cost{c} {}
+            Item(const Item & item) : value{item.value}, cost{item.cost} {}
+            double getRatio() const { 
+                if(cost == 0) return std::numeric_limits<double>::max();
+                return value / (double)cost;
+            }
+            bool operator<(const Item& other) const { return getRatio() > other.getRatio(); }
+        };
     private:
-        int budget;
+        Cost budget;
         std::vector<Item> items;
     public:
         Instance() {}
 
-        void setBudget(int b) { budget = b; }
-        int getBudget() const { return budget; }
+        void setBudget(Cost b) { budget = b; }
+        Cost getBudget() const { return budget; }
 
-        void addItem(int v, int w) { items.push_back(Item(v, w)); }
-        int itemCount() const { return items.size(); }
+        void addItem(Value v, Cost w) { items.push_back(Item(v, w)); }
+        size_t itemCount() const { return items.size(); }
 
         const std::vector<Item> & getItems() const { return items; }
         const Item getItem(int i) const { return items[i]; }
         const Item operator[](int i) const { return getItem(i); }
     };
 
+    template <template<typename,typename> class TInstance, typename Value, typename Cost>
     class Solution {
     private:
-        const Instance & instance;
+        const TInstance<Value,Cost> & instance;
         std::vector<bool> _taken;
     public:
-        Solution(const Instance & i) : instance(i), _taken(i.itemCount()) {}
+        Solution(const TInstance<Value,Cost> & i) : instance(i), _taken(i.itemCount()) {}
 
-        void set(const std::vector<bool> & takens) {
-            _taken = takens;
-        }
+        void add(size_t i) { _taken[i] = true; }
+        void remove(size_t i) { _taken[i] = false; }
+        bool isTaken(size_t i) { return _taken[i]; }
 
-        void add(int i) { _taken[i] = true; }
-        void remove(int i) { _taken[i] = false; }
-        bool isTaken(int i) { return _taken[i]; }
-
-        int getValue() const {
-            int sum = 0;
-            for(int i=0; i<instance.itemCount(); ++i)
-                sum += _taken[i] ? instance[i].value : 0;
+        Value getValue() const {
+            Value sum{};
+            for(size_t i=0; i<instance.itemCount(); ++i)
+                if(_taken[i]) sum += instance[i].value;
             return sum;
         }
-        int getCost() const { 
-            int sum = 0;
-            for(int i=0; i<instance.itemCount(); ++i)
-                sum += _taken[i] ? instance[i].cost : 0;
+        Cost getCost() const { 
+            Cost sum{};
+            for(size_t i=0; i<instance.itemCount(); ++i)
+                if(_taken[i]) sum += instance[i].cost;
             return sum;
         }
     };
 
+    template <template<typename,typename> class Inst, typename Value, typename Cost>
     class BranchAndBound {
+    public:
+        using TInstance = Inst<Value,Cost>;
+        using TItem = typename TInstance::Item;
+        using TSolution = Solution<Inst, Value, Cost>;
     private:
-        const Instance & instance;
-        std::vector<Item> sorted_items;
+        const TInstance & instance;
+        std::vector<TItem> sorted_items;
 
         std::mutex solution_mutex;
-        Solution * best_solution;
-        std::atomic<double> best_value;
+        std::vector<bool> best_takens;
+        std::atomic<Value> best_value;
         
+        struct Node {
+            std::vector<bool> takens;
+            Value value;
+            Cost budget_left;
+            size_t depth;
+
+            Node(const TInstance & instance)
+                    : takens(instance.itemCount(), false)
+                    , value{0}
+                    , budget_left{instance.getBudget()}
+                    , depth{0} {}
+        };
     public:
-        BranchAndBound(Instance & instance)
-            : instance(instance) {}
+        BranchAndBound(TInstance & instance)
+            : instance(instance)
+            , best_takens(instance.itemCount(), false) {}
     
-        double computeUpperBound(int from_depth, int value, int budget_left) {
-            for(int i=from_depth; i<instance.itemCount(); ++i) {
-                const Item item = sorted_items[i];
-                if(budget_left - item.cost <= 0)
+        double computeUpperBound(const Node & n) {
+            int value = n.value;
+            int budget_left = n.budget_left;            
+            for(size_t i=n.depth; i<instance.itemCount(); ++i) {
+                const TItem item = sorted_items[i];
+                if(budget_left <= item.cost)
                     return (double)value + (double)budget_left * item.getRatio();
                 budget_left -= item.cost;
                 value += item.value;
@@ -95,38 +116,66 @@ namespace Knapstack {
             return value;
         }
 
-        void recursive_branch_and_bound(int depth, int value, int budget_left) {
-            if(budget_left < 0) return; // invalid node
-            if(depth == instance.itemCount()) { // leaf
-                if(value > best_value) {
-                    best_value = value;
+        void recursive_bnb(Node & n) {
+            if(n.depth == instance.itemCount()) { // leaf
+                if(n.value > best_value) {
+                    best_value = n.value;
                     solution_mutex.lock();
-                    // best_solution = current_solution;
+                    best_takens = n.takens;
                     solution_mutex.unlock();
                 }
                 return;
             }
-            if(computeUpperBound(depth, value, budget_left) <= best_value)
+            if(computeUpperBound(n) <= best_value)
                 return; // this node could not be in a better solution
-            const Item & item = instance[depth];
-            if(item.cost <= budget_left)
-                recursive_branch_and_bound(depth+1, value+item.value, budget_left-item.cost);
-            recursive_branch_and_bound(depth+1, value, budget_left);
+            const TItem & item = sorted_items[n.depth];
+            if(item.cost <= n.budget_left) {
+                n.takens[n.depth] = true;
+                n.value += item.value;
+                n.budget_left -= item.cost;
+                ++n.depth;
+                recursive_bnb(n);
+                --n.depth;
+                n.takens[n.depth] = false;
+                n.value -= item.value;
+                n.budget_left += item.cost;
+            }
+            ++n.depth;
+            recursive_bnb(n);
+            --n.depth;
         }
 
-        Solution solve() {
+        void thread_bnb(Node n) {
+            recursive_bnb(n);
+        }
+
+        TSolution solve() {
             sorted_items = instance.getItems();
-            std::sort(sorted_items.begin(), sorted_items.end());
-            Solution solution(instance);
-            best_solution = &solution;
-            recursive_branch_and_bound(0, 0, 0);
+            std::vector<int> permuted_id(instance.itemCount());
+            std::iota(permuted_id.begin(), permuted_id.end(), 0);
+
+            auto zip_view = ranges::view::zip(sorted_items, permuted_id);
+            ranges::sort(zip_view, [](auto p1, auto p2){ return p1.first < p2.first; });
+            
+            best_value = 0;
+            Node n(instance);
+            recursive_bnb(n);
+
+            TSolution solution(instance);
+            for(size_t i=0; i<instance.itemCount(); ++i) {
+                if(best_takens[i])
+                    solution.add(permuted_id[i]);
+            }
+
+            std::cout << best_value << std::endl;
+
             return solution;
         }
     };
 }; //namespace Knapstack
 
-Knapstack::Instance parse_instance(const std::filesystem::path & instance_path) {
-    Knapstack::Instance instance;
+Knapstack::Instance<int,int> parse_instance(const std::filesystem::path & instance_path) {
+    Knapstack::Instance<int,int> instance;
     std::ifstream file(instance_path);
     int budget;
     file >> budget;
@@ -148,7 +197,6 @@ int main(int argc, const char *argv[]) {
     }
     
     Knapstack::Instance instance = parse_instance(instance_path);
-
     Knapstack::BranchAndBound solver(instance);
     Knapstack::Solution solution = solver.solve();
 
