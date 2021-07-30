@@ -16,11 +16,7 @@ class Item {
             if(cost == 0) return std::numeric_limits<double>::max();
             return value / (double)cost;
         }
-        bool operator<(const Item& other) const { 
-            if(getRatio() == other.getRatio())
-                return cost > other.cost;
-            return getRatio() > other.getRatio();
-        }
+        bool operator<(const Item& other) const { return getRatio() > other.getRatio(); }
 };
 
 class Instance {
@@ -28,27 +24,18 @@ class Instance {
         int budget;
         std::vector<Item> items;
     public:
-        std::vector<int> min_cost_below;
         Instance() {}
 
         void setBudget(int b) { budget = b; }
         int getBudget() const { return budget; }
 
         void addItem(int v, int w) { items.push_back(Item(v, w)); }
-        void clearItems() { items.clear(); }
         int itemCount() const { return items.size(); }
 
         const Item getItem(int i) const { return items[i]; }
         const Item operator[](int i) const { return getItem(i); }
 
-        void sortByRatios() { 
-            std::sort(items.begin(), items.end()); // implicitly uses operator< of Item
-            min_cost_below.resize(itemCount());
-            int i = itemCount()-1;
-            min_cost_below[i] = items[i].cost;
-            for(--i; i>=0; --i)
-                min_cost_below[i] = std::min(min_cost_below[i+1], items[i].cost);
-        } 
+        void sortByRatios() { std::sort(items.begin(), items.end()); } // implicitly uses operator< of Item
 };
 
 class Solution {
@@ -70,7 +57,7 @@ class Solution {
             total_value += item.value;
             total_cost += item.cost;
         }
-        void release(int i) { 
+        void release(int i) {
             assert(_taken[i]);
             _taken[i] = false;
             const Item item = instance[i];
@@ -80,10 +67,6 @@ class Solution {
 
         bool isTaken(int i) { return _taken[i]; }
 
-        bool canProgress(int from_depth) {
-            int budget_left = instance.getBudget() - total_cost;
-            return instance.min_cost_below[from_depth] <= budget_left;
-        }
         double computeUpperBound(int from_depth) {
             int current_value = total_value;
             int budget_left = instance.getBudget() - total_cost;
@@ -91,7 +74,7 @@ class Solution {
                 assert(!_taken[i]);
                 const Item item = instance[i];
                 if(budget_left - item.cost <= 0)
-                    return current_value + budget_left * item.getRatio();
+                    return (double)current_value + (double)budget_left * item.getRatio();
                 budget_left -= item.cost;
                 current_value += item.value;
             }
@@ -107,28 +90,26 @@ class Solution {
         }
 };
 
-void fill_instance(const std::filesystem::path & instance_path, Instance & instance) {
+Instance parse_instance(const std::filesystem::path & instance_path) {
+    Instance instance;
     std::ifstream file(instance_path);
     int budget;
     file >> budget;
     instance.setBudget(budget);
     int value, weight;
     while(file >> weight >> value) instance.addItem(value, weight);
+    return instance;
 }
 
 void branch_and_bound(const Instance & instance, Solution & current_solution, int depth, Solution & best_solution) {
     if(current_solution.getCost() > instance.getBudget()) return; // invalid node
-    if(depth == instance.itemCount() || !current_solution.canProgress(depth)) { // leaf or not enought budget
+    if(depth == instance.itemCount()) { // leaf
         if(current_solution.getValue() > best_solution.getValue())
-            best_solution = current_solution;
-        // std::cout << current_solution.getValue() << "\t" << instance.getBudget() - current_solution.getCost() << "\t" << best_solution.getValue() << std::endl;
+            best_solution = current_solution;  
         return;
     }
     if(current_solution.computeUpperBound(depth) <= best_solution.getValue()) return; // this node could not be in a better solution
-
-    // if(depth > 100)
-    //     std::cout << depth << "\t" << current_solution.computeUpperBound(depth) << std::endl; 
-
+    
     current_solution.take(depth);
     branch_and_bound(instance, current_solution, depth+1, best_solution);
     current_solution.release(depth);
@@ -146,8 +127,7 @@ int main(int argc, const char *argv[]) {
         return EXIT_FAILURE;
     }
     
-    Instance instance;
-    fill_instance(instance_path, instance);
+    Instance instance = parse_instance(instance_path);
     instance.sortByRatios();
 
     Solution current_solution(instance), best_solution(instance);
