@@ -23,7 +23,7 @@ conan_basic_setup(TARGETS)
 
 ################### EXEC target ####################
 add_executable(knapstack_bnb src/knapstack_bnb.cpp)
-# target_include_directories(knapstack_bnb PUBLIC include)
+target_include_directories(knapstack_bnb PUBLIC include)
 
 target_link_libraries(knapstack_bnb CONAN_PKG::tbb)
 target_link_libraries(knapstack_bnb CONAN_PKG::boost)

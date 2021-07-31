@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "utils/chrono.hpp"
+
 class Item {
     public:
         int value;
@@ -90,7 +92,8 @@ class Solution {
         }
 };
 
-Instance parse_instance(const std::filesystem::path & instance_path) {
+
+Instance parse_tp_instance(const std::filesystem::path & instance_path) {
     Instance instance;
     std::ifstream file(instance_path);
     int budget;
@@ -98,6 +101,20 @@ Instance parse_instance(const std::filesystem::path & instance_path) {
     instance.setBudget(budget);
     int value, weight;
     while(file >> weight >> value) instance.addItem(value, weight);
+    return instance;
+}
+
+Instance parse_classic_instance(const std::filesystem::path & instance_path) {
+    Instance instance;
+    std::ifstream file(instance_path);
+    int nb_items, budget;
+    file >> nb_items >> budget;
+    instance.setBudget(budget);
+    int value, weight;
+    for(int i=0; i<nb_items; ++i) {
+        file >> weight >> value;
+        instance.addItem(value, weight);
+    }
     return instance;
 }
 
@@ -127,13 +144,16 @@ int main(int argc, const char *argv[]) {
         return EXIT_FAILURE;
     }
     
-    Instance instance = parse_instance(instance_path);
+    Instance instance = parse_classic_instance(instance_path);
     instance.sortByRatios();
 
     Solution current_solution(instance), best_solution(instance);
-    branch_and_bound(instance, current_solution, 0, best_solution);
 
-    std::cout << best_solution.getValue() << std::endl;
+    Chrono chrono;
+    branch_and_bound(instance, current_solution, 0, best_solution);
+    int time_us = chrono.timeUs();
+
+    std::cout << best_solution.getValue() << " in " << time_us << " µs" << std::endl;
 
     return EXIT_SUCCESS;
 }
