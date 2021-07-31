@@ -40,7 +40,7 @@ int main(int argc, const char *argv[]) {
     if(!std::filesystem::exists(instance_path)) {
         std::cerr << instance_path << ":" << " File does not exists" << std::endl;
         return EXIT_FAILURE;
-    }
+    } 
     
     Knapstack::Instance instance = parse_classic_instance(instance_path);
     Knapstack::BranchAndBound solver(instance);

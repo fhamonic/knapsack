@@ -2,6 +2,7 @@
 #define BRANCH_AND_BOUND_HPP
 
 #include <numeric>
+#include <stack>
 #include <vector>
 
 #include <range/v3/view/zip.hpp>
@@ -21,7 +22,7 @@ namespace Knapstack {
         const TInstance & instance;
         std::vector<TItem> sorted_items;
 
-        std::vector<bool> best_takens;
+        std::stack<int> best_stack;
         Value best_value;
 
         double computeUpperBound(size_t depth, Value bound_value, Cost bound_budget_left) { 
@@ -40,15 +41,14 @@ namespace Knapstack {
             Value value = 0;
             Cost budget_left = instance.getBudget();
             int depth = 0;
-            std::vector<bool> takens(nb_items, false);
+            std::stack<int> stack;
             goto begin;
-            for(;;) {
             backtrack:
-                for(--depth; depth>=0 && !takens[depth]; --depth);
-                if(depth < 0) return;
+            while(!stack.empty()) {
+                depth = stack.top();
+                stack.pop();
                 value -= sorted_items[depth].value;
-                budget_left += sorted_items[depth].cost;
-                takens[depth++] = false;
+                budget_left += sorted_items[depth++].cost;
             begin:
                 for(; depth<nb_items; ++depth) {
                     const TItem & add_item = sorted_items[depth];
@@ -57,19 +57,17 @@ namespace Knapstack {
                         goto backtrack;
                     value += add_item.value;
                     budget_left -= add_item.cost;
-                    takens[depth] = true;
+                    stack.push(depth);
                 }
                 if(value <= best_value) 
                     continue;
                 best_value = value;
-                best_takens = takens;
+                best_stack = stack;
             }
         }
     public:
         BranchAndBound(TInstance & instance)
-            : instance(instance)
-            , best_takens(instance.itemCount(), false) {}
-    
+            : instance(instance) {}   
         
 
         TSolution solve() {
@@ -84,9 +82,13 @@ namespace Knapstack {
             iterative_bnb();
 
             TSolution solution(instance);
-            for(size_t i=0; i<instance.itemCount(); ++i) {
-                if(best_takens[i])
-                    solution.add(permuted_id[i]);
+            // for(size_t i=0; i<instance.itemCount(); ++i) {
+            //     if(best_takens[i])
+            //         solution.add(permuted_id[i]);
+            // }
+            while(! best_stack.empty()) {
+                solution.add(permuted_id[best_stack.top()]);
+                best_stack.pop();
             }
             return solution;
         }

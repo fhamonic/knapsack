@@ -32,7 +32,7 @@ namespace Knapstack {
             std::vector<bool> takens;
             Value value;
             Cost budget_left;
-            size_t depth;
+            int depth;
 
             Node(const TInstance & instance, BranchAndBound & solver)
                 : solver(solver)
@@ -43,11 +43,10 @@ namespace Knapstack {
             
             Node(const Node & n) = default;
 
-            double computeUpperBound() {
-                Value bound_value = value;
-                Cost bound_budget_left = budget_left;            
-                for(size_t i=depth; i<solver.get().instance.itemCount(); ++i) {
-                    const TItem & item = solver.get().sorted_items[i];
+            
+            double computeUpperBound(size_t depth, Value bound_value, Cost bound_budget_left) { 
+                for(; depth<sorted_items.size(); ++depth) {
+                    const TItem & item = sorted_items[depth];
                     if(bound_budget_left <= item.cost)
                         return bound_value + bound_budget_left * item.getRatio();
                     bound_budget_left -= item.cost;
@@ -56,31 +55,37 @@ namespace Knapstack {
                 return bound_value;
             }
 
-            void recursive_bnb() {
-                if(depth == solver.get().instance.itemCount()) { // leaf
-                    if(value > solver.get().best_value) {
-                        solver.get().best_value = value;
-                        solver.get().solution_mutex.lock();
-                        solver.get().best_takens = takens;
-                        solver.get().solution_mutex.unlock();
+            void iterative_bnb() {
+                std::stack<int> stack;
+
+                stack.push(-1);
+                goto begin;
+                for(;;) {
+                backtrack:
+                    depth = stack.top();
+                    stack.pop();
+                    if(depth < 0) return;
+                    value -= olver.get().sorted_items[depth].value;
+                    budget_left += olver.get().sorted_items[depth].cost;
+                    takens[depth++] = false;
+                begin:
+                    for(; depth<nb_items; ++depth) {
+                        const TItem & add_item = solver.get().sorted_items[depth];
+                        if(budget_left < add_item.cost) continue;
+                        if(computeUpperBound(depth, value, budget_left) <= solver.get().best_value)
+                            goto backtrack;
+                        value += add_item.value;
+                        budget_left -= add_item.cost;
+                        takens[depth] = true;
+                        stack.push(depth);
                     }
-                    return;
+                    if(value <= solver.get().best_value) 
+                        continue;
+                    solver.get().best_value = value;
+                    solver.get().solution_mutex.lock();
+                    solver.get().best_takens = takens;
+                    solver.get().solution_mutex.unlock();
                 }
-                if(computeUpperBound() <= solver.get().best_value)
-                    return; // this node could not be in a better solution
-                const TItem & item = solver.get().sorted_items[depth];
-                if(item.cost <= budget_left) {
-                    takens[depth++] = true;
-                    value += item.value;
-                    budget_left -= item.cost;
-                    recursive_bnb();
-                    takens[--depth] = false;
-                    value -= item.value;
-                    budget_left += item.cost;
-                }
-                ++depth;
-                recursive_bnb();
-                --depth;
             }
         };
     public:
