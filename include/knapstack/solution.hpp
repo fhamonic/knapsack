@@ -1,5 +1,5 @@
-#ifndef SOLUTION_HPP
-#define SOLUTION_HPP
+#ifndef KNAPSTACK_SOLUTION_HPP
+#define KNAPSTACK_SOLUTION_HPP
 
 #include <vector>
 
@@ -15,8 +15,11 @@ namespace Knapstack {
         Solution(const TInstance<Value,Cost> & i) : instance(i), _taken(i.itemCount()) {}
 
         void add(size_t i) { _taken[i] = true; }
+        void set(size_t i, bool b) { _taken[i] = b; }
         void remove(size_t i) { _taken[i] = false; }
         bool isTaken(size_t i) { return _taken[i]; }
+
+        auto & operator[](size_t i) { return _taken[i]; }
 
         Value getValue() const {
             Value sum{};
@@ -33,4 +36,4 @@ namespace Knapstack {
     };
 } //namespace Knapstack
 
-#endif //SOLUTION_HPP
+#endif //KNAPSTACK_SOLUTION_HPP

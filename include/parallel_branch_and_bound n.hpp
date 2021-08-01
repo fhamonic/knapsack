@@ -28,15 +28,12 @@ namespace Knapstack {
 
 
         std::atomic<int> available_threads;
-        std::atomic<bool> thread_loop;
+        tbb::concurrent_queue<std::thread> threads;
 
         std::mutex solution_mutex;
         std::stack<int> best_stack;
         std::atomic<Value> best_value;
         
-        struct Node;
-        tbb::concurrent_bounded_queue<Node> node_queue;
-
         struct Node {
             ParallelBranchAndBound * solver;
             std::stack<int> stack;
@@ -57,9 +54,11 @@ namespace Knapstack {
             Node& operator=(const Node & n) = default;
             Node& operator=(Node && n) = default;
 
-            double computeUpperBound(size_t depth, Value bound_value, Cost bound_budget_left) { 
-                for(; depth<solver->sorted_items.size(); ++depth) {
-                    const TItem & item = solver->sorted_items[depth];
+            double computeUpperBound() { 
+                Value bound_value = value;
+                Cost bound_budget_left = budget_left;
+                for(size_t i=depth; i<solver->sorted_items.size(); ++i) {
+                    const TItem & item = solver->sorted_items[i];
                     if(bound_budget_left <= item.cost)
                         return bound_value + bound_budget_left * item.getRatio();
                     bound_budget_left -= item.cost;
@@ -67,41 +66,41 @@ namespace Knapstack {
                 }
                 return bound_value;
             }
-            
-            void iterative_bnb() {
-                goto begin;
-            backtrack:
-                while(!stack.empty()) {
-                    depth = stack.top();
-                    stack.pop();
-                    value -= solver->sorted_items[depth].value;
-                    budget_left += solver->sorted_items[depth++].cost;
-                    for(; depth<solver->sorted_items.size(); ++depth) {
-                        if(budget_left < solver->sorted_items[depth].cost) continue;
-                        if(computeUpperBound(depth, value, budget_left) <= solver->best_value)
-                            goto backtrack;
-                    begin:
-                        // if(solver->sorted_items.size() - depth > 1000) {
-                        if(--solver->available_threads > 0) {
-                            solver->node_queue.emplace(*this);
-                            continue;
-                        } else {
-                            ++solver->available_threads;
-                        }
-                        // }
-                        value += solver->sorted_items[depth].value;
-                        budget_left -= solver->sorted_items[depth].cost;
-                        stack.push(depth);
-                    }
-                    if(value <= solver->best_value) 
-                        continue;
-                    solver->best_value = value;
-                    solver->solution_mutex.lock();
-                    solver->best_stack = stack;
-                    solver->solution_mutex.unlock();
-                }
-            }
         };
+
+        
+        static void iterative_bnb(Node n) {
+            goto begin;
+        backtrack:
+            while(!n.stack.empty()) {
+                n.depth = n.stack.top();
+                n.stack.pop();
+                n.value -= n.solver->sorted_items[n.depth].value;
+                n.budget_left += n.solver->sorted_items[n.depth++].cost;
+                for(; n.depth<n.solver->sorted_items.size(); ++n.depth) {
+                    if(n.budget_left < n.solver->sorted_items[n.depth].cost) continue;
+                    if(n.computeUpperBound() <= n.solver->best_value)
+                        goto backtrack;
+                begin:
+                    if(--n.solver->available_threads > 0) {
+                        n.solver->threads.emplace(iterative_bnb, n);
+                        continue;
+                    } else {
+                        ++n.solver->available_threads;
+                    }
+                    n.value += n.solver->sorted_items[n.depth].value;
+                    n.budget_left -= n.solver->sorted_items[n.depth].cost;
+                    n.stack.push(n.depth);
+                }
+                if(n.value <= n.solver->best_value) 
+                    continue;
+                n.solver->best_value = n.value;
+                n.solver->solution_mutex.lock();
+                n.solver->best_stack = n.stack;
+                n.solver->solution_mutex.unlock();
+            }
+            ++n.solver->available_threads;
+        }
     public:
         ParallelBranchAndBound(TInstance & instance)
             : instance(instance) {}
@@ -122,33 +121,14 @@ namespace Knapstack {
             
 
             const int nb_threads = std::thread::hardware_concurrency();
-            available_threads = nb_threads-1;
-            thread_loop = true;
-
-            node_queue.clear();
-            node_queue.set_capacity(nb_threads);
-            node_queue.emplace(this);
 
             best_value = 0;
-            std::vector<std::thread> threads;
-            threads.reserve(nb_threads);
-            for(int i=0; i<nb_threads; ++i) {
-                threads.emplace_back([this, &nb_threads] (void) {
-                    Node n;
-                    for(;;) {
-                        while(!node_queue.try_pop(n))
-                            if(!thread_loop) return;
-                        n.iterative_bnb();
-                        ++available_threads;
-                        if(available_threads == nb_threads) {
-                            thread_loop = false;
-                            return;
-                        }
-                    }
-                });
+            available_threads = nb_threads-1;
+            threads.emplace(iterative_bnb, Node(this));     
+
+            while(available_threads < nb_threads) {
+                threads.p
             }
-            for(auto & thread : threads)
-                thread.join();
 
             TSolution solution(instance);
             while(! best_stack.empty()) {

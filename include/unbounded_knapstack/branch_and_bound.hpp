@@ -1,5 +1,5 @@
-#ifndef BRANCH_AND_BOUND_HPP
-#define BRANCH_AND_BOUND_HPP
+#ifndef UBOUNDED_KNAPSTACK_BRANCH_AND_BOUND_HPP
+#define UBOUNDED_KNAPSTACK_BRANCH_AND_BOUND_HPP
 
 #include <numeric>
 #include <stack>
@@ -9,10 +9,10 @@
 #include <range/v3/algorithm/sort.hpp>
 #include <range/v3/algorithm/remove_if.hpp>
 
-#include "instance.hpp"
-#include "solution.hpp"
+#include "unbounded_knapstack/instance.hpp"
+#include "unbounded_knapstack/solution.hpp"
 
-namespace Knapstack {
+namespace UnboundedKnapstack {
     template <template<typename,typename> class Inst, typename Value, typename Cost>
     class BranchAndBound {
     public:
@@ -20,58 +20,55 @@ namespace Knapstack {
         using TItem = typename TInstance::Item;
         using TSolution = Solution<Inst, Value, Cost>;
     private:
-        const TInstance & instance;
-        std::vector<TItem> sorted_items;
-
-        std::stack<int> best_stack;
-        Value best_value;
-
-        double computeUpperBound(size_t depth, Value bound_value, Cost bound_budget_left) { 
+        double computeUpperBound(const std::vector<TItem> & sorted_items, size_t depth, Value bound_value, Cost bound_budget_left) { 
             for(; depth<sorted_items.size(); ++depth) {
                 const TItem & item = sorted_items[depth];
                 if(bound_budget_left <= item.cost)
                     return bound_value + bound_budget_left * item.getRatio();
-                bound_budget_left -= item.cost;
-                bound_value += item.value;
+                const int nb_take = bound_budget_left / item.cost;
+                bound_budget_left -= nb_take * item.cost;
+                bound_value += nb_take * item.value;
             }
             return bound_value;
         }
 
-        void iterative_bnb() {
+        std::stack<std::pair<int,int>> iterative_bnb(const std::vector<TItem> & sorted_items, Cost budget_left) {
             const int nb_items = sorted_items.size();
-            Value value = 0;
-            Cost budget_left = instance.getBudget();
             int depth = 0;
-            std::stack<int> stack;
+            Value value = 0;
+            Value best_value = 0;
+            std::stack<std::pair<int,int>> stack;
+            std::stack<std::pair<int,int>> best_stack;
             goto begin;
         backtrack:
             while(!stack.empty()) {
-                depth = stack.top();
-                stack.pop();
+                depth = stack.top().first;
+                if(--stack.top().second == 0)
+                    stack.pop();
                 value -= sorted_items[depth].value;
                 budget_left += sorted_items[depth++].cost;
                 for(; depth<nb_items; ++depth) {
                     if(budget_left < sorted_items[depth].cost) continue;
-                    if(computeUpperBound(depth, value, budget_left) <= best_value)
+                    if(computeUpperBound(sorted_items, depth, value, budget_left) <= best_value)
                         goto backtrack;
                 begin:
-                    value += sorted_items[depth].value;
-                    budget_left -= sorted_items[depth].cost;
-                    stack.push(depth);
+                    const int nb_take = budget_left / sorted_items[depth].cost;
+                    value += nb_take * sorted_items[depth].value;
+                    budget_left -= nb_take * sorted_items[depth].cost;
+                    stack.emplace(depth, nb_take);
                 }
                 if(value <= best_value) 
                     continue;
                 best_value = value;
                 best_stack = stack;
             }
+            return best_stack;
         }
     public:
-        BranchAndBound(TInstance & instance)
-            : instance(instance) {}   
+        BranchAndBound() {}   
         
-
-        TSolution solve() {
-            sorted_items = instance.getItems();
+        TSolution solve(const TInstance & instance) {
+            std::vector<TItem> sorted_items = instance.getItems();
             std::vector<int> permuted_id(instance.itemCount());
             std::iota(permuted_id.begin(), permuted_id.end(), 0);
 
@@ -84,17 +81,18 @@ namespace Knapstack {
             permuted_id.erase(permuted_id.begin() + new_size, permuted_id.end());
             ranges::sort(zip_view, [](auto p1, auto p2){ return p1.first < p2.first; });
             
-            best_value = 0;
-            iterative_bnb();
+            std::stack<std::pair<int,int>> best_stack = 
+                    iterative_bnb(sorted_items, instance.getBudget());
 
             TSolution solution(instance);
             while(! best_stack.empty()) {
-                solution.add(permuted_id[best_stack.top()]);
+                solution.set(permuted_id[best_stack.top().first], 
+                             best_stack.top().second);
                 best_stack.pop();
             }
             return solution;
         }
     };
-} //namespace Knapstack
+} //namespace UnboundedKnapstack
 
-#endif //BRANCH_AND_BOUND_HPP
+#endif //UBOUNDED_KNAPSTACK_BRANCH_AND_BOUND_HPP

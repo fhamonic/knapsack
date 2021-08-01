@@ -55,30 +55,6 @@ namespace Knapstack {
                 return; // this node could not be in a better solution
             recursive_bnb(depth+1, value, budget_left);
         }
-
-
-
-        // void iterative_bnb() {
-        //     const size_t depth = 0;
-        //     Value value = 0;
-        //     Cost budget_left = instance.getBudget();
-        //     if(depth == sorted_items.size()) { // leaf
-        //         if(value > best_value) {
-        //             best_value = value;
-        //             best_takens = takens;
-        //         }
-        //         return;
-        //     }
-        //     if(computeUpperBound(depth, value, budget_left) <= best_value)
-        //         return; // this node could not be in a better solution
-        //     const TItem & item = sorted_items[depth];
-        //     if(item.cost <= budget_left) {
-        //         takens[depth] = true;
-        //         recursive_bnb(depth+1, value+item.value, budget_left-item.cost);
-        //         takens[depth] = false;
-        //     }
-        //     recursive_bnb(depth+1, value, budget_left);
-        // }
     public:
         BranchAndBound(TInstance & instance)
             : instance(instance)

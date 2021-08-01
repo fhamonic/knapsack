@@ -1,5 +1,5 @@
-#ifndef INSTANCE_HPP
-#define INSTANCE_HPP
+#ifndef KNAPSTACK_INSTANCE_HPP
+#define KNAPSTACK_INSTANCE_HPP
 
 #include <limits>
 #include <vector>
@@ -13,11 +13,17 @@ namespace Knapstack {
             Value value;
             Cost cost;
         public:
-            Item(Value v, Cost c) : value{v}, cost{c} {}
-            Item(const Item & item) : value{item.value}, cost{item.cost} {}
+            Item(Value v, Cost c)
+                : value{v}
+                , cost{c}
+                {}
+            Item(const Item & item)
+                : value{item.value}
+                , cost{item.cost}
+                {}
             double getRatio() const { 
                 if(cost == 0) return std::numeric_limits<double>::max();
-                return value / (double)cost;
+                return static_cast<double>(value) / static_cast<double>(cost);
             }
             bool operator<(const Item& other) const { return getRatio() > other.getRatio(); }
         };
@@ -39,4 +45,4 @@ namespace Knapstack {
     };
 } //namespace Knapstack
 
-#endif //INSTANCE_HPP
+#endif //KNAPSTACK_INSTANCE_HPP

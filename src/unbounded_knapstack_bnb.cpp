@@ -1,8 +1,7 @@
 #include <iostream>
 #include <filesystem>
 
-#include "knapstack/branch_and_bound.hpp"
-// #include "knapstack/parallel_branch_and_bound.hpp"
+#include "unbounded_knapstack/branch_and_bound.hpp"
 
 #include "utils/chrono.hpp"
 #include "utils/instance_parsers.hpp"
@@ -18,13 +17,11 @@ int main(int argc, const char *argv[]) {
         return EXIT_FAILURE;
     } 
     
-    // Knapstack::Instance instance = parse_tp_instance(instance_path);
-    Knapstack::Instance instance = parse_classic_instance(instance_path);
-    Knapstack::BranchAndBound<Knapstack::Instance, int, int> solver;
-    // Knapstack::ParallelBranchAndBound solver(instance);
+    UnboundedKnapstack::Instance<int,int> instance = parse_unbounded_instance(instance_path);
+    UnboundedKnapstack::BranchAndBound<UnboundedKnapstack::Instance, int, int> solver;
 
     Chrono chrono;
-    Knapstack::Solution solution = solver.solve(instance);
+    UnboundedKnapstack::Solution solution = solver.solve(instance);
     int time_us = chrono.timeUs();
 
     std::cout << solution.getValue() << " in " << time_us << " µs" << std::endl;
