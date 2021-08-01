@@ -112,7 +112,7 @@ Instance parse_classic_instance(const std::filesystem::path & instance_path) {
     instance.setBudget(budget);
     int value, weight;
     for(int i=0; i<nb_items; ++i) {
-        file >> weight >> value;
+        file >> value >> weight;
         instance.addItem(value, weight);
     }
     return instance;

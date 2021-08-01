@@ -7,6 +7,7 @@
 
 #include <range/v3/view/zip.hpp>
 #include <range/v3/algorithm/sort.hpp>
+#include <range/v3/algorithm/remove_if.hpp>
 
 #include "instance.hpp"
 #include "solution.hpp"
@@ -43,20 +44,19 @@ namespace Knapstack {
             int depth = 0;
             std::stack<int> stack;
             goto begin;
-            backtrack:
+        backtrack:
             while(!stack.empty()) {
                 depth = stack.top();
                 stack.pop();
                 value -= sorted_items[depth].value;
                 budget_left += sorted_items[depth++].cost;
-            begin:
                 for(; depth<nb_items; ++depth) {
-                    const TItem & add_item = sorted_items[depth];
-                    if(budget_left < add_item.cost) continue;
+                    if(budget_left < sorted_items[depth].cost) continue;
                     if(computeUpperBound(depth, value, budget_left) <= best_value)
                         goto backtrack;
-                    value += add_item.value;
-                    budget_left -= add_item.cost;
+                begin:
+                    value += sorted_items[depth].value;
+                    budget_left -= sorted_items[depth].cost;
                     stack.push(depth);
                 }
                 if(value <= best_value) 
@@ -76,16 +76,18 @@ namespace Knapstack {
             std::iota(permuted_id.begin(), permuted_id.end(), 0);
 
             auto zip_view = ranges::view::zip(sorted_items, permuted_id);
+            auto end = ranges::remove_if(zip_view, [&](const auto & r) { 
+                return r.first.cost > instance.getBudget(); 
+            });
+            const ptrdiff_t new_size = std::distance(zip_view.begin(), end);
+            sorted_items.erase(sorted_items.begin() + new_size, sorted_items.end());
+            permuted_id.erase(permuted_id.begin() + new_size, permuted_id.end());
             ranges::sort(zip_view, [](auto p1, auto p2){ return p1.first < p2.first; });
             
             best_value = 0;
             iterative_bnb();
 
             TSolution solution(instance);
-            // for(size_t i=0; i<instance.itemCount(); ++i) {
-            //     if(best_takens[i])
-            //         solution.add(permuted_id[i]);
-            // }
             while(! best_stack.empty()) {
                 solution.add(permuted_id[best_stack.top()]);
                 best_stack.pop();
