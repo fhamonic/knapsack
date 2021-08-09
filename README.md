@@ -1,6 +1,6 @@
 # Knapstack_Solver
 
-Simple 0-1 Knapstack parallel branch and bound solver.
+Simple branch and bound solvers for 0-1 and unbounded Knapstack problems.
 
 [![Generic badge](https://img.shields.io/badge/C++-17-blue.svg?style=flat&logo=c%2B%2B)](https://en.cppreference.com/w/cpp/17)
 [![Generic badge](https://img.shields.io/badge/CMake-3.12+-blue.svg?style=flat&logo=cmake)](https://cmake.org/cmake/help/latest/release/3.12.html)
