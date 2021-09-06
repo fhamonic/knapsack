@@ -4,7 +4,7 @@ CPUS?=$(shell getconf _NPROCESSORS_ONLN || echo 1)
 
 BUILD_DIR = build
 
-.PHONY: all clean doc
+.PHONY: all clean single-header
 
 all: $(BUILD_DIR)
 	@cd $(BUILD_DIR) && \
@@ -19,6 +19,13 @@ $(BUILD_DIR):
 clean:
 	@rm -rf $(BUILD_DIR)
 
-doc:
-	doxywizard $$PWD/doc/Doxyfile
-	xdg-open doc/html/index.html 
+single-header: single-header/knapstack_solver.hpp
+
+single-header/knapstack_solver.hpp:
+	@python3 -m quom --include_directory include include/all.hpp knapstack_solver.hpp.tmp && \
+	mkdir -p single-header && \
+	echo "/*" > single-header/knapstack_solver.hpp && \
+	cat LICENSE >> single-header/knapstack_solver.hpp && \
+	echo "*/" >> single-header/knapstack_solver.hpp && \
+	cat knapstack_solver.hpp.tmp >> single-header/knapstack_solver.hpp && \
+	rm knapstack_solver.hpp.tmp
