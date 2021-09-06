@@ -6,34 +6,37 @@
 #include "instance.hpp"
 
 namespace Knapstack {
-    template <template<typename,typename> class TInstance, typename Value, typename Cost>
-    class Solution {
-    private:
-        const TInstance<Value,Cost> & instance;
-        std::vector<bool> _taken;
-    public:
-        Solution(const TInstance<Value,Cost> & i) : instance(i), _taken(i.itemCount()) {}
+template <template <typename, typename> class TInstance, typename Value,
+          typename Cost>
+class Solution {
+private:
+    const TInstance<Value, Cost> & instance;
+    std::vector<bool> _taken;
 
-        void add(size_t i) { _taken[i] = true; }
-        void set(size_t i, bool b) { _taken[i] = b; }
-        void remove(size_t i) { _taken[i] = false; }
-        bool isTaken(size_t i) { return _taken[i]; }
+public:
+    Solution(const TInstance<Value, Cost> & i)
+        : instance(i), _taken(i.itemCount()) {}
 
-        auto & operator[](size_t i) { return _taken[i]; }
+    void add(size_t i) { _taken[i] = true; }
+    void set(size_t i, bool b) { _taken[i] = b; }
+    void remove(size_t i) { _taken[i] = false; }
+    bool isTaken(size_t i) { return _taken[i]; }
 
-        Value getValue() const {
-            Value sum{};
-            for(size_t i=0; i<instance.itemCount(); ++i)
-                if(_taken[i]) sum += instance[i].value;
-            return sum;
-        }
-        Cost getCost() const { 
-            Cost sum{};
-            for(size_t i=0; i<instance.itemCount(); ++i)
-                if(_taken[i]) sum += instance[i].cost;
-            return sum;
-        }
-    };
-} //namespace Knapstack
+    auto & operator[](size_t i) { return _taken[i]; }
 
-#endif //KNAPSTACK_SOLUTION_HPP
+    Value getValue() const {
+        Value sum{};
+        for(size_t i = 0; i < instance.itemCount(); ++i)
+            if(_taken[i]) sum += instance[i].value;
+        return sum;
+    }
+    Cost getCost() const {
+        Cost sum{};
+        for(size_t i = 0; i < instance.itemCount(); ++i)
+            if(_taken[i]) sum += instance[i].cost;
+        return sum;
+    }
+};
+}  // namespace Knapstack
+
+#endif  // KNAPSTACK_SOLUTION_HPP

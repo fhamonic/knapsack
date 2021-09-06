@@ -7,8 +7,8 @@
 #include "knapstack/instance.hpp"
 
 namespace UnboundedKnapstack {
-    template <typename Value, typename Cost>
-    using Instance = Knapstack::Instance<Value, Cost>;
-} //namespace UnboundedKnapstack
+template <typename Value, typename Cost>
+using Instance = Knapstack::Instance<Value, Cost>;
+}  // namespace UnboundedKnapstack
 
-#endif //UNBOUNDED_KNAPSTACK_INSTANCE_HPP
+#endif  // UNBOUNDED_KNAPSTACK_INSTANCE_HPP

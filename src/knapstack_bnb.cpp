@@ -1,5 +1,5 @@
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 
 #include "knapstack/branch_and_bound.hpp"
 // #include "knapstack/parallel_branch_and_bound.hpp"
@@ -7,17 +7,18 @@
 #include "utils/chrono.hpp"
 #include "utils/instance_parsers.hpp"
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char * argv[]) {
     if(argc < 2) {
         std::cerr << "input requiered : <knapstack_instance_file>" << std::endl;
         return EXIT_FAILURE;
     }
     std::filesystem::path instance_path = argv[1];
     if(!std::filesystem::exists(instance_path)) {
-        std::cerr << instance_path << ":" << " File does not exists" << std::endl;
+        std::cerr << instance_path << ":"
+                  << " File does not exists" << std::endl;
         return EXIT_FAILURE;
-    } 
-    
+    }
+
     // Knapstack::Instance instance = parse_tp_instance(instance_path);
     Knapstack::Instance instance = parse_classic_instance(instance_path);
     Knapstack::BranchAndBound<Knapstack::Instance, int, int> solver;
@@ -31,4 +32,3 @@ int main(int argc, const char *argv[]) {
 
     return EXIT_SUCCESS;
 }
-

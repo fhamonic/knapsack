@@ -4,4 +4,4 @@
 #include "knapstack/branch_and_bound.hpp"
 #include "unbounded_knapstack/branch_and_bound.hpp"
 
-#endif //KNAPSTACK_ALL_HPP
+#endif  // KNAPSTACK_ALL_HPP
