@@ -19,13 +19,13 @@ $(BUILD_DIR):
 clean:
 	@rm -rf $(BUILD_DIR)
 
-single-header: single-header/knapstack_solver.hpp
+single-header: single-header/easy_knapstack.hpp
 
-single-header/knapstack_solver.hpp:
-	@python3 -m quom --include_directory include include/all.hpp knapstack_solver.hpp.tmp && \
+single-header/easy_knapstack.hpp:
+	@python3 -m quom --include_directory include include/all.hpp easy_knapstack.hpp.tmp && \
 	mkdir -p single-header && \
-	echo "/*" > single-header/knapstack_solver.hpp && \
-	cat LICENSE >> single-header/knapstack_solver.hpp && \
-	echo "*/" >> single-header/knapstack_solver.hpp && \
-	cat knapstack_solver.hpp.tmp >> single-header/knapstack_solver.hpp && \
-	rm knapstack_solver.hpp.tmp
+	echo "/*" > single-header/easy_knapstack.hpp && \
+	cat LICENSE >> single-header/easy_knapstack.hpp && \
+	echo "*/" >> single-header/easy_knapstack.hpp && \
+	cat easy_knapstack.hpp.tmp >> single-header/easy_knapstack.hpp && \
+	rm easy_knapstack.hpp.tmp
