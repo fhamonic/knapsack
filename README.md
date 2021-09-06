@@ -9,6 +9,7 @@ It is not meant to be a hard use solver but a simple and efficient one for small
 [![Generic badge](https://img.shields.io/badge/license-Boost%20Software%20License-blue)](https://www.boost.org/users/license.html)
 
 ## Dependencies
+Range-v3 (https://ericniebler.github.io/range-v3/)
 
 ### Build process
 The build process requires CMake 3.12 (https://cmake.org/) or more and the Conan C++ package manager (https://conan.io/).
