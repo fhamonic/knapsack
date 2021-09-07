@@ -20,8 +20,7 @@ int main(int argc, const char * argv[]) {
 
     UnboundedKnapstack::Instance<int, int> instance =
         parse_unbounded_instance(instance_path);
-    UnboundedKnapstack::BranchAndBound<UnboundedKnapstack::Instance, int, int>
-        solver;
+    UnboundedKnapstack::BranchAndBound<int, int> solver;
 
     Chrono chrono;
     UnboundedKnapstack::Solution solution = solver.solve(instance);

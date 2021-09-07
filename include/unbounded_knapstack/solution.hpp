@@ -6,15 +6,15 @@
 #include "unbounded_knapstack/instance.hpp"
 
 namespace UnboundedKnapstack {
-template <template <typename, typename> class TInstance, typename Value,
+template <typename Value,
           typename Cost>
 class Solution {
 private:
-    const TInstance<Value, Cost> & instance;
+    const Instance<Value, Cost> & instance;
     std::vector<int> _nb_taken;
 
 public:
-    Solution(const TInstance<Value, Cost> & i)
+    Solution(const Instance<Value, Cost> & i)
         : instance(i), _nb_taken(i.itemCount()) {}
 
     void add(size_t i) { ++_nb_taken[i]; }

@@ -13,13 +13,13 @@
 #include "knapstack/solution.hpp"
 
 namespace Knapstack {
-template <template <typename, typename> class Inst, typename Value,
+template <typename Value,
           typename Cost>
 class BranchAndBound {
 public:
-    using TInstance = Inst<Value, Cost>;
+    using TInstance = Instance<Value, Cost>;
     using TItem = typename TInstance::Item;
-    using TSolution = Solution<Inst, Value, Cost>;
+    using TSolution = Solution<Value, Cost>;
 
 private:
     double computeUpperBound(const std::vector<TItem> & sorted_items,

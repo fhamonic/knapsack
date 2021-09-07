@@ -6,15 +6,15 @@
 #include "instance.hpp"
 
 namespace Knapstack {
-template <template <typename, typename> class TInstance, typename Value,
+template <typename Value,
           typename Cost>
 class Solution {
 private:
-    const TInstance<Value, Cost> & instance;
+    const Instance<Value, Cost> & instance;
     std::vector<bool> _taken;
 
 public:
-    Solution(const TInstance<Value, Cost> & i)
+    Solution(const Instance<Value, Cost> & i)
         : instance(i), _taken(i.itemCount()) {}
 
     void add(size_t i) { _taken[i] = true; }

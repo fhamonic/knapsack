@@ -19,9 +19,9 @@ int main(int argc, const char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    // Knapstack::Instance instance = parse_tp_instance(instance_path);
-    Knapstack::Instance instance = parse_classic_instance(instance_path);
-    Knapstack::BranchAndBound<Knapstack::Instance, int, int> solver;
+    Knapstack::Instance instance = parse_tp_instance(instance_path);
+    // Knapstack::Instance instance = parse_classic_instance(instance_path);
+    Knapstack::BranchAndBound<int, int> solver;
     // Knapstack::ParallelBranchAndBound solver(instance);
 
     Chrono chrono;
