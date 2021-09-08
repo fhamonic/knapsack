@@ -46,7 +46,7 @@ public:
         }
 
         TSolution solution(instance);
-        Value * step = previous_tab + budget;
+        const Value * step = previous_tab + budget;
         for(int i = nb_items - 1; i >= 0; --i) {
             const bool taken = (*step > *(step - budget - 1));
             solution.set(i, taken);
