@@ -6,8 +6,7 @@
 #include "instance.hpp"
 
 namespace Knapstack {
-template <typename Value,
-          typename Cost>
+template <typename Value, typename Cost>
 class Solution {
 private:
     const Instance<Value, Cost> & instance;
