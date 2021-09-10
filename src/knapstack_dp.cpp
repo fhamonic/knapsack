@@ -1,8 +1,7 @@
 #include <filesystem>
 #include <iostream>
 
-#include "knapstack/branch_and_bound.hpp"
-// #include "knapstack/parallel_branch_and_bound.hpp"
+#include "knapstack/dynamic_programming.hpp"
 
 #include "utils/chrono.hpp"
 #include "utils/instance_parsers.hpp"
@@ -21,8 +20,7 @@ int main(int argc, const char * argv[]) {
 
     // Knapstack::Instance instance = parse_tp_instance(instance_path);
     Knapstack::Instance instance = parse_classic_instance(instance_path);
-    Knapstack::BranchAndBound<int, int> solver;
-    // Knapstack::ParallelBranchAndBound solver(instance);
+    Knapstack::DynamicProgramming<int, int> solver;
 
     Chrono chrono;
     Knapstack::Solution solution = solver.solve(instance);
