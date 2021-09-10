@@ -28,6 +28,16 @@ target_include_directories(knapstack_solver INTERFACE include)
 target_link_libraries(knapstack_solver PUBLIC INTERFACE CONAN_PKG::boost)
 target_link_libraries(knapstack_solver PUBLIC INTERFACE CONAN_PKG::range-v3)
 
+# ################## TEST target ####################
+enable_testing()
+
+add_executable(optimum_value_test test/optimum_value_test.cpp)
+target_link_libraries(optimum_value_test knapstack_solver)
+target_link_libraries(optimum_value_test CONAN_PKG::gtest)
+
+include(GoogleTest)
+gtest_discover_tests(optimum_value_test)
+
 ################### EXEC target ####################
 add_executable(knapstack_bnb src/knapstack_bnb.cpp)
 target_include_directories(knapstack_bnb PUBLIC include)
