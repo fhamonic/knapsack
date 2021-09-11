@@ -14,11 +14,11 @@ $(BUILD_DIR):
 	@mkdir $(BUILD_DIR) && \
 	cd $(BUILD_DIR) && \
 	conan install .. && \
-	cmake -DCMAKE_BUILD_TYPE=Release -DWARNINGS=ON -DCOMPILE_FOR_NATIVE=ON -DCOMPILE_WITH_LTO=ON ..
+	cmake -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_BUILD_TYPE=Release -DWARNINGS=ON -DCOMPILE_FOR_NATIVE=ON -DCOMPILE_WITH_LTO=ON ..
 
 test: all
 	@cd $(BUILD_DIR) && \
-	ctest
+	ctest --output-on-failure
 	
 clean:
 	@rm -rf $(BUILD_DIR)

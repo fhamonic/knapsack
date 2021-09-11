@@ -13,8 +13,7 @@
 #include "knapstack/solution.hpp"
 
 namespace Knapstack {
-template <typename Value,
-          typename Cost>
+template <typename Value, typename Cost>
 class BranchAndBound {
 public:
     using TInstance = Instance<Value, Cost>;
@@ -71,27 +70,31 @@ public:
     BranchAndBound() {}
 
     TSolution solve(const TInstance & instance) {
-        std::vector<TItem> sorted_items = instance.getItems();
-        std::vector<int> permuted_id(instance.itemCount());
-        std::iota(permuted_id.begin(), permuted_id.end(), 0);
-
-        auto zip_view = ranges::view::zip(sorted_items, permuted_id);
-        auto end = ranges::remove_if(zip_view, [&](const auto & r) {
-            return r.first.cost > instance.getBudget();
-        });
-        const ptrdiff_t new_size = std::distance(zip_view.begin(), end);
-        sorted_items.erase(sorted_items.begin() + new_size, sorted_items.end());
-        permuted_id.erase(permuted_id.begin() + new_size, permuted_id.end());
-        ranges::sort(zip_view,
-                     [](auto p1, auto p2) { return p1.first < p2.first; });
-
-        std::stack<int> best_stack =
-            iterative_bnb(sorted_items, instance.getBudget());
-
         TSolution solution(instance);
-        while(!best_stack.empty()) {
-            solution.add(permuted_id[best_stack.top()]);
-            best_stack.pop();
+        if(instance.itemCount() > 0) {
+            std::vector<TItem> sorted_items = instance.getItems();
+            std::vector<int> permuted_id(instance.itemCount());
+            std::iota(permuted_id.begin(), permuted_id.end(), 0);
+
+            auto zip_view = ranges::view::zip(sorted_items, permuted_id);
+            auto end = ranges::remove_if(zip_view, [&](const auto & r) {
+                return r.first.cost > instance.getBudget();
+            });
+            const ptrdiff_t new_size = std::distance(zip_view.begin(), end);
+            sorted_items.erase(sorted_items.begin() + new_size,
+                               sorted_items.end());
+            permuted_id.erase(permuted_id.begin() + new_size,
+                              permuted_id.end());
+            ranges::sort(zip_view,
+                         [](auto p1, auto p2) { return p1.first < p2.first; });
+
+            std::stack<int> best_stack =
+                iterative_bnb(sorted_items, instance.getBudget());
+
+            while(!best_stack.empty()) {
+                solution.add(permuted_id[best_stack.top()]);
+                best_stack.pop();
+            }
         }
         return solution;
     }

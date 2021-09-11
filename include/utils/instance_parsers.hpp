@@ -34,7 +34,6 @@ inline Knapstack::Instance<int, int> parse_classic_instance(
     }
     int taken, opt = 0;
     for(int i = 0; file >> taken; ++i) opt += taken * instance[i].value;
-    std::cout << "opt = " << opt << std::endl;
     return instance;
 }
 

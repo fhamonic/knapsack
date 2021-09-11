@@ -12,16 +12,16 @@ std::vector<std::pair<Knapstack::Instance<int, int>, double>> instances;
 class Environment : public ::testing::Environment {
 public:
     void SetUp() {
-        instances.emplace_back(parse_tp_instance("instances/knapstack/sac0"),
+        instances.emplace_back(parse_tp_instance("../instances/knapstack/sac0"),
                                103);
-        instances.emplace_back(parse_tp_instance("instances/knapstack/sac1"),
-                               103);
-        instances.emplace_back(parse_tp_instance("instances/knapstack/sac2"),
-                               103);
-        instances.emplace_back(parse_tp_instance("instances/knapstack/sac3"),
-                               103);
-        instances.emplace_back(parse_tp_instance("instances/knapstack/sac4"),
-                               103);
+        instances.emplace_back(parse_tp_instance("../instances/knapstack/sac1"),
+                               2077672);
+        instances.emplace_back(parse_tp_instance("../instances/knapstack/sac2"),
+                               2095878);
+        instances.emplace_back(parse_tp_instance("../instances/knapstack/sac3"),
+                               2132531);
+        instances.emplace_back(parse_tp_instance("../instances/knapstack/sac4"),
+                               2166542);
     }
 };
 
@@ -35,7 +35,7 @@ TEST(KnapstackBNB, OptTest) {
     Knapstack::BranchAndBound<int, int> solver;
     for(const auto & [instance, opt] : instances) {
         Knapstack::Solution<int, int> solution = solver.solve(instance);
-        EXPECT_EQ(solution.getValue(), 103);
+        EXPECT_EQ(solution.getValue(), opt);
     }
 }
 
@@ -43,6 +43,6 @@ TEST(KnapstackDP, OptTest) {
     Knapstack::DynamicProgramming<int, int> solver;
     for(const auto & [instance, opt] : instances) {
         Knapstack::Solution<int, int> solution = solver.solve(instance);
-        EXPECT_EQ(solution.getValue(), 103);
+        EXPECT_EQ(solution.getValue(), opt);
     }
 }
