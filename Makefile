@@ -12,7 +12,7 @@ all: $(BUILD_DIR)
 	cmake --build . --parallel $(CPUS)
 
 $(BUILD_DIR):
-	mkdir $(BUILD_DIR) && \
+	@mkdir $(BUILD_DIR) && \
 	cd $(BUILD_DIR) && \
 	conan install .. && \
 	cmake -DCMAKE_CXX_COMPILER=$(CC) -DCMAKE_BUILD_TYPE=Release -DWARNINGS=ON -DCOMPILE_FOR_NATIVE=ON -DCOMPILE_WITH_LTO=ON ..
