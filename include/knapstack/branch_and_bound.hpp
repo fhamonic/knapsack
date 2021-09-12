@@ -22,7 +22,7 @@ public:
 
 private:
     double computeUpperBound(const std::vector<TItem> & sorted_items,
-                             size_t depth, Value bound_value,
+                             std::size_t depth, Value bound_value,
                              Cost bound_budget_left) {
         for(; depth < sorted_items.size(); ++depth) {
             const TItem & item = sorted_items[depth];
@@ -34,14 +34,14 @@ private:
         return bound_value;
     }
 
-    std::stack<int> iterative_bnb(const std::vector<TItem> & sorted_items,
+    std::stack<std::size_t> iterative_bnb(const std::vector<TItem> & sorted_items,
                                   Cost budget_left) {
-        const int nb_items = sorted_items.size();
-        int depth = 0;
+        const std::size_t nb_items = sorted_items.size();
+        std::size_t depth = 0;
         Value value = 0;
         Value best_value = 0;
-        std::stack<int> stack;
-        std::stack<int> best_stack;
+        std::stack<std::size_t> stack;
+        std::stack<std::size_t> best_stack;
         goto begin;
     backtrack:
         while(!stack.empty()) {
@@ -88,7 +88,7 @@ public:
             ranges::sort(zip_view,
                          [](auto p1, auto p2) { return p1.first < p2.first; });
 
-            std::stack<int> best_stack =
+            std::stack<std::size_t> best_stack =
                 iterative_bnb(sorted_items, instance.getBudget());
 
             while(!best_stack.empty()) {
