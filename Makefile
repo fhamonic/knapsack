@@ -5,7 +5,7 @@ CC:=g++-10
 
 BUILD_DIR = build
 
-.PHONY: all clean single-header
+.PHONY: all test clean single-header
 
 all: $(BUILD_DIR)
 	@cd $(BUILD_DIR) && \
