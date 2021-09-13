@@ -1,6 +1,7 @@
 #ifndef KNAPSTACK_DYNAMIC_PROGRAMMING_HPP
 #define KNAPSTACK_DYNAMIC_PROGRAMMING_HPP
 
+#include <algorithm>
 #include <numeric>
 #include <type_traits>
 
@@ -35,9 +36,8 @@ public:
 
         for(const auto & item : instance.getItems()) {
             Value * const current_tab = previous_tab + budget + 1;
-            Cost w = 0;
-            for(; w < std::min(budget, item.cost); ++w)
-                current_tab[w] = previous_tab[w];
+            Cost w = std::min(budget, item.cost);
+            std::copy(previous_tab, previous_tab+w, current_tab);
             for(; w <= budget; ++w) {
                 current_tab[w] = std::max(
                     previous_tab[w], previous_tab[w - item.cost] + item.value);
