@@ -6,9 +6,13 @@
 
 #include "knapstack/instance.hpp"
 
-namespace UnboundedKnapstack {
+namespace fhamonic {
+namespace unbounded_knapstack {
+
 template <typename Value, typename Cost>
-using Instance = Knapstack::Instance<Value, Cost>;
-}  // namespace UnboundedKnapstack
+using Instance = knapstack::Instance<Value, Cost>;
+
+}  // namespace unbounded_knapstack
+}  // namespace fhamonic
 
 #endif  // UNBOUNDED_KNAPSTACK_INSTANCE_HPP

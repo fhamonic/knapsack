@@ -5,9 +5,10 @@
 
 #include "unbounded_knapstack/instance.hpp"
 
-namespace UnboundedKnapstack {
-template <typename Value,
-          typename Cost>
+namespace fhamonic {
+namespace unbounded_knapstack {
+
+template <typename Value, typename Cost>
 class Solution {
 private:
     const Instance<Value, Cost> & instance;
@@ -37,6 +38,8 @@ public:
         return sum;
     }
 };
-}  // namespace UnboundedKnapstack
+
+}  // namespace unbounded_knapstack
+}  // namespace fhamonic
 
 #endif  // UNBOUNDED_KNAPSTACK_SOLUTION_HPP

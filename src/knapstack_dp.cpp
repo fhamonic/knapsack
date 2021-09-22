@@ -6,6 +6,8 @@
 #include "utils/chrono.hpp"
 #include "utils/instance_parsers.hpp"
 
+namespace Knapstack = fhamonic::knapstack;
+
 int main(int argc, const char * argv[]) {
     if(argc < 2) {
         std::cerr << "input requiered : <knapstack_instance_file>" << std::endl;

@@ -10,7 +10,9 @@
 #include "knapstack/instance.hpp"
 #include "knapstack/solution.hpp"
 
-namespace Knapstack {
+namespace fhamonic {
+namespace knapstack {
+
 template <
     typename Value, typename Cost,
     class = typename std::enable_if<std::is_integral<Cost>::value, bool>::type>
@@ -56,6 +58,8 @@ public:
         return solution;
     }
 };
+
 }  // namespace Knapstack
+}  // namespace fhamonic
 
 #endif  // KNAPSTACK_DYNAMIC_PROGRAMMING_HPP

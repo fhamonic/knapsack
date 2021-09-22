@@ -12,7 +12,9 @@
 #include "knapstack/instance.hpp"
 #include "knapstack/solution.hpp"
 
-namespace Knapstack {
+namespace fhamonic {
+namespace knapstack {
+
 template <typename Value, typename Cost>
 class BranchAndBound {
 public:
@@ -34,8 +36,8 @@ private:
         return bound_value;
     }
 
-    std::stack<std::size_t> iterative_bnb(const std::vector<TItem> & sorted_items,
-                                  Cost budget_left) {
+    std::stack<std::size_t> iterative_bnb(
+        const std::vector<TItem> & sorted_items, Cost budget_left) {
         const std::size_t nb_items = sorted_items.size();
         std::size_t depth = 0;
         Value value = 0;
@@ -99,6 +101,7 @@ public:
         return solution;
     }
 };
-}  // namespace Knapstack
+}  // namespace knapstack
+}  // namespace fhamonic
 
 #endif  // KNAPSTACK_BRANCH_AND_BOUND_HPP

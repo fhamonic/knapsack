@@ -7,6 +7,9 @@
 #include "knapstack/dynamic_programming.hpp"
 #include "utils/instance_parsers.hpp"
 
+namespace Knapstack = fhamonic::knapstack;
+namespace UnboundedKnapstack = fhamonic::unbounded_knapstack;
+
 std::vector<std::pair<Knapstack::Instance<int, int>, double>> instances;
 
 class Environment : public ::testing::Environment {

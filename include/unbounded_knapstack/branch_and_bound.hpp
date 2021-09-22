@@ -12,9 +12,10 @@
 #include "unbounded_knapstack/instance.hpp"
 #include "unbounded_knapstack/solution.hpp"
 
-namespace UnboundedKnapstack {
-template <typename Value,
-          typename Cost>
+namespace fhamonic {
+namespace unbounded_knapstack {
+
+template <typename Value, typename Cost>
 class BranchAndBound {
 public:
     using TInstance = Instance<Value, Cost>;
@@ -99,6 +100,8 @@ public:
         return solution;
     }
 };
-}  // namespace UnboundedKnapstack
+
+}  // namespace unbounded_knapstack
+}  // namespace fhamonic
 
 #endif  // UBOUNDED_KNAPSTACK_BRANCH_AND_BOUND_HPP
