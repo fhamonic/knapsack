@@ -1,4 +1,4 @@
-# Easy Knapstack
+# Knapstack
 
 Efficient implementations of simple branch and bound and dynamic programming algorithms for 0-1 and unbounded Knapstack problems.
 The purpose of this project is to provide highly optimized and flexible implementations of basic algorithms for solving small to medium instances of Knapstack problems. 
