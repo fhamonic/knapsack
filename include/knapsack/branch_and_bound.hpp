@@ -50,8 +50,8 @@ private:
             depth = stack.top();
             stack.pop();
             value -= sorted_items[depth].value;
-            budget_left += sorted_items[depth++].cost;
-            for(; depth < nb_items; ++depth) {
+            budget_left += sorted_items[depth].cost;
+            for(++depth; depth < nb_items; ++depth) {
                 if(budget_left < sorted_items[depth].cost) continue;
                 if(computeUpperBound(sorted_items, depth, value, budget_left) <=
                    best_value)
