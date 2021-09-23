@@ -6,7 +6,7 @@
 #include "instance.hpp"
 
 namespace fhamonic {
-namespace knapstack {
+namespace knapsack {
 
 template <typename Value, typename Cost>
 class Solution {
@@ -39,7 +39,7 @@ public:
     }
 };
 
-}  // namespace knapstack
+}  // namespace knapsack
 }  // namespace fhamonic
 
 #endif  // KNAPSTACK_SOLUTION_HPP

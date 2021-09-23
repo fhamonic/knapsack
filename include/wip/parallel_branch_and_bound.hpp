@@ -15,7 +15,7 @@
 #include "instance.hpp"
 #include "solution.hpp"
 
-namespace Knapstack {
+namespace Knapsack {
 template <template <typename, typename> class Inst, typename Value,
           typename Cost>
 class ParallelBranchAndBound {
@@ -159,6 +159,6 @@ public:
         return solution;
     }
 };
-}  // namespace Knapstack
+}  // namespace Knapsack
 
 #endif  // PARALLEL_BRANCH_AND_BOUND_HPP

@@ -9,11 +9,11 @@
 #include <range/v3/algorithm/sort.hpp>
 #include <range/v3/view/zip.hpp>
 
-#include "unbounded_knapstack/instance.hpp"
-#include "unbounded_knapstack/solution.hpp"
+#include "unbounded_knapsack/instance.hpp"
+#include "unbounded_knapsack/solution.hpp"
 
 namespace fhamonic {
-namespace unbounded_knapstack {
+namespace unbounded_knapsack {
 
 template <typename Value, typename Cost>
 class BranchAndBound {
@@ -101,7 +101,7 @@ public:
     }
 };
 
-}  // namespace unbounded_knapstack
+}  // namespace unbounded_knapsack
 }  // namespace fhamonic
 
 #endif  // UBOUNDED_KNAPSTACK_BRANCH_AND_BOUND_HPP

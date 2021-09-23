@@ -3,10 +3,10 @@
 
 #include <vector>
 
-#include "unbounded_knapstack/instance.hpp"
+#include "unbounded_knapsack/instance.hpp"
 
 namespace fhamonic {
-namespace unbounded_knapstack {
+namespace unbounded_knapsack {
 
 template <typename Value, typename Cost>
 class Solution {
@@ -39,7 +39,7 @@ public:
     }
 };
 
-}  // namespace unbounded_knapstack
+}  // namespace unbounded_knapsack
 }  // namespace fhamonic
 
 #endif  // UNBOUNDED_KNAPSTACK_SOLUTION_HPP

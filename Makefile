@@ -24,13 +24,13 @@ test: all
 clean:
 	@rm -rf $(BUILD_DIR)
 
-single-header: single-header/fhamonic/knapstack.hpp
+single-header: single-header/fhamonic/knapsack.hpp
 
-single-header/fhamonic/knapstack.hpp:
-	@python3 -m quom --include_directory include include/all.hpp fhamonic_knapstack.hpp.tmp && \
+single-header/fhamonic/knapsack.hpp:
+	@python3 -m quom --include_directory include include/all.hpp fhamonic_knapsack.hpp.tmp && \
 	mkdir -p single-header/fhamonic && \
-	echo "/*" > single-header/fhamonic/knapstack.hpp && \
-	cat LICENSE >> single-header/fhamonic/knapstack.hpp && \
-	echo "*/" >> single-header/fhamonic/knapstack.hpp && \
-	cat fhamonic_knapstack.hpp.tmp >> single-header/fhamonic/knapstack.hpp && \
-	rm fhamonic_knapstack.hpp.tmp
+	echo "/*" > single-header/fhamonic/knapsack.hpp && \
+	cat LICENSE >> single-header/fhamonic/knapsack.hpp && \
+	echo "*/" >> single-header/fhamonic/knapsack.hpp && \
+	cat fhamonic_knapsack.hpp.tmp >> single-header/fhamonic/knapsack.hpp && \
+	rm fhamonic_knapsack.hpp.tmp

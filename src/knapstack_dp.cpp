@@ -1,16 +1,16 @@
 #include <filesystem>
 #include <iostream>
 
-#include "knapstack/dynamic_programming.hpp"
+#include "knapsack/dynamic_programming.hpp"
 
 #include "utils/chrono.hpp"
 #include "utils/instance_parsers.hpp"
 
-namespace Knapstack = fhamonic::knapstack;
+namespace Knapsack = fhamonic::knapsack;
 
 int main(int argc, const char * argv[]) {
     if(argc < 2) {
-        std::cerr << "input requiered : <knapstack_instance_file>" << std::endl;
+        std::cerr << "input requiered : <knapsack_instance_file>" << std::endl;
         return EXIT_FAILURE;
     }
     std::filesystem::path instance_path = argv[1];
@@ -20,12 +20,12 @@ int main(int argc, const char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    Knapstack::Instance instance = parse_tp_instance(instance_path);
-    // Knapstack::Instance instance = parse_classic_instance(instance_path);
-    Knapstack::DynamicProgramming<int, int> solver;
+    Knapsack::Instance instance = parse_tp_instance(instance_path);
+    // Knapsack::Instance instance = parse_classic_instance(instance_path);
+    Knapsack::DynamicProgramming<int, int> solver;
 
     Chrono chrono;
-    Knapstack::Solution solution = solver.solve(instance);
+    Knapsack::Solution solution = solver.solve(instance);
     int time_us = chrono.timeUs();
 
     std::cout << solution.getValue() << " in " << time_us << " µs" << std::endl;

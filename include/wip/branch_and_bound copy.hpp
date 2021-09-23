@@ -10,7 +10,7 @@
 #include "instance.hpp"
 #include "solution.hpp"
 
-namespace Knapstack {
+namespace Knapsack {
 template <template <typename, typename> class Inst, typename Value,
           typename Cost>
 class BranchAndBound {
@@ -85,6 +85,6 @@ public:
         return solution;
     }
 };
-}  // namespace Knapstack
+}  // namespace Knapsack
 
 #endif  // BRANCH_AND_BOUND_HPP

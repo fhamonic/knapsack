@@ -4,15 +4,15 @@
 #include <limits>
 #include <vector>
 
-#include "knapstack/instance.hpp"
+#include "knapsack/instance.hpp"
 
 namespace fhamonic {
-namespace unbounded_knapstack {
+namespace unbounded_knapsack {
 
 template <typename Value, typename Cost>
-using Instance = knapstack::Instance<Value, Cost>;
+using Instance = knapsack::Instance<Value, Cost>;
 
-}  // namespace unbounded_knapstack
+}  // namespace unbounded_knapsack
 }  // namespace fhamonic
 
 #endif  // UNBOUNDED_KNAPSTACK_INSTANCE_HPP

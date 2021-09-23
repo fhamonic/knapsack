@@ -5,12 +5,12 @@
 #include <fstream>
 #include <iostream>
 
-#include "knapstack/instance.hpp"
-#include "unbounded_knapstack/instance.hpp"
+#include "knapsack/instance.hpp"
+#include "unbounded_knapsack/instance.hpp"
 
-inline fhamonic::knapstack::Instance<int, int> parse_tp_instance(
+inline fhamonic::knapsack::Instance<int, int> parse_tp_instance(
     const std::filesystem::path & instance_path) {
-    fhamonic::knapstack::Instance<int, int> instance;
+    fhamonic::knapsack::Instance<int, int> instance;
     std::ifstream file(instance_path);
     int budget;
     file >> budget;
@@ -20,9 +20,9 @@ inline fhamonic::knapstack::Instance<int, int> parse_tp_instance(
     return instance;
 }
 
-inline fhamonic::knapstack::Instance<int, int> parse_classic_instance(
+inline fhamonic::knapsack::Instance<int, int> parse_classic_instance(
     const std::filesystem::path & instance_path) {
-    fhamonic::knapstack::Instance<int, int> instance;
+    fhamonic::knapsack::Instance<int, int> instance;
     std::ifstream file(instance_path);
     int nb_items, budget;
     file >> nb_items >> budget;
@@ -37,9 +37,9 @@ inline fhamonic::knapstack::Instance<int, int> parse_classic_instance(
     return instance;
 }
 
-inline fhamonic::unbounded_knapstack::Instance<int, int> parse_unbounded_instance(
+inline fhamonic::unbounded_knapsack::Instance<int, int> parse_unbounded_instance(
     const std::filesystem::path & instance_path) {
-    fhamonic::unbounded_knapstack::Instance<int, int> instance;
+    fhamonic::unbounded_knapsack::Instance<int, int> instance;
     std::ifstream file(instance_path);
     int nb_items, budget;
     file >> nb_items >> budget;

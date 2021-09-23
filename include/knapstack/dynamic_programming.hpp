@@ -7,11 +7,11 @@
 
 #include <range/v3/view/reverse.hpp>
 
-#include "knapstack/instance.hpp"
-#include "knapstack/solution.hpp"
+#include "knapsack/instance.hpp"
+#include "knapsack/solution.hpp"
 
 namespace fhamonic {
-namespace knapstack {
+namespace knapsack {
 
 template <
     typename Value, typename Cost,
@@ -59,7 +59,7 @@ public:
     }
 };
 
-}  // namespace Knapstack
+}  // namespace Knapsack
 }  // namespace fhamonic
 
 #endif  // KNAPSTACK_DYNAMIC_PROGRAMMING_HPP
