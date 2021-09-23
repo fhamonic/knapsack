@@ -1,5 +1,5 @@
-#ifndef KNAPSTACK_BRANCH_AND_BOUND_HPP
-#define KNAPSTACK_BRANCH_AND_BOUND_HPP
+#ifndef FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP
+#define FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP
 
 #include <numeric>
 #include <stack>
@@ -104,4 +104,4 @@ public:
 }  // namespace knapsack
 }  // namespace fhamonic
 
-#endif  // KNAPSTACK_BRANCH_AND_BOUND_HPP
+#endif  // FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP

@@ -1,5 +1,5 @@
-#ifndef KNAPSTACK_INSTANCE_HPP
-#define KNAPSTACK_INSTANCE_HPP
+#ifndef FHAMONIC_KNAPSACK_INSTANCE_HPP
+#define FHAMONIC_KNAPSACK_INSTANCE_HPP
 
 #include <limits>
 #include <vector>
@@ -48,4 +48,4 @@ public:
 }  // namespace Knapsack
 }  // namespace fhamonic
 
-#endif  // KNAPSTACK_INSTANCE_HPP
+#endif  // FHAMONIC_KNAPSACK_INSTANCE_HPP

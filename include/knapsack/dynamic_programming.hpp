@@ -1,5 +1,5 @@
-#ifndef KNAPSTACK_DYNAMIC_PROGRAMMING_HPP
-#define KNAPSTACK_DYNAMIC_PROGRAMMING_HPP
+#ifndef FHAMONIC_KNAPSACK_DYNAMIC_PROGRAMMING_HPP
+#define FHAMONIC_KNAPSACK_DYNAMIC_PROGRAMMING_HPP
 
 #include <algorithm>
 #include <numeric>
@@ -62,4 +62,4 @@ public:
 }  // namespace Knapsack
 }  // namespace fhamonic
 
-#endif  // KNAPSTACK_DYNAMIC_PROGRAMMING_HPP
+#endif  // FHAMONIC_KNAPSACK_DYNAMIC_PROGRAMMING_HPP

@@ -1,5 +1,5 @@
-#ifndef UNBOUNDED_KNAPSTACK_SOLUTION_HPP
-#define UNBOUNDED_KNAPSTACK_SOLUTION_HPP
+#ifndef UNBOUNDED_FHAMONIC_KNAPSACK_SOLUTION_HPP
+#define UNBOUNDED_FHAMONIC_KNAPSACK_SOLUTION_HPP
 
 #include <vector>
 
@@ -42,4 +42,4 @@ public:
 }  // namespace unbounded_knapsack
 }  // namespace fhamonic
 
-#endif  // UNBOUNDED_KNAPSTACK_SOLUTION_HPP
+#endif  // UNBOUNDED_FHAMONIC_KNAPSACK_SOLUTION_HPP

@@ -1,5 +1,5 @@
-#ifndef KNAPSTACK_SOLUTION_HPP
-#define KNAPSTACK_SOLUTION_HPP
+#ifndef FHAMONIC_KNAPSACK_SOLUTION_HPP
+#define FHAMONIC_KNAPSACK_SOLUTION_HPP
 
 #include <vector>
 
@@ -42,4 +42,4 @@ public:
 }  // namespace knapsack
 }  // namespace fhamonic
 
-#endif  // KNAPSTACK_SOLUTION_HPP
+#endif  // FHAMONIC_KNAPSACK_SOLUTION_HPP
