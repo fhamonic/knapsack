@@ -26,10 +26,11 @@ public:
     DynamicProgramming() {}
 
     TSolution solve(const TInstance & instance) {
-        const int nb_items = instance.itemCount();
+        const std::size_t nb_items = instance.itemCount();
         const Cost budget = instance.getBudget();
 
-        auto tab = std::make_unique<Value[]>((nb_items + 1) * (budget + 1));
+        auto tab = std::make_unique<Value[]>(
+            (nb_items + 1) * static_cast<std::size_t>(budget + 1));
 
         Value * previous_tab = tab.get();
         for(Cost w = 0; w < budget; ++w) {
@@ -39,7 +40,7 @@ public:
         for(const auto & item : instance.getItems()) {
             Value * const current_tab = previous_tab + budget + 1;
             Cost w = std::min(budget, item.cost);
-            std::copy(previous_tab, previous_tab+w, current_tab);
+            std::copy(previous_tab, previous_tab + w, current_tab);
             for(; w <= budget; ++w) {
                 current_tab[w] = std::max(
                     previous_tab[w], previous_tab[w - item.cost] + item.value);
@@ -49,17 +50,19 @@ public:
 
         TSolution solution(instance);
         const Value * step = previous_tab + budget;
-        for(int i = nb_items - 1; i >= 0; --i) {
+        for(std::size_t i = (nb_items - 1); i > 0; --i) {
             const bool taken = (*step > *(step - budget - 1));
             solution.set(i, taken);
             step -= budget + 1 + taken * instance[i].cost;
         }
+        const bool taken = (*step > *(step - budget - 1));
+        solution.set(0, taken);
 
         return solution;
     }
 };
 
-}  // namespace Knapsack
+}  // namespace knapsack
 }  // namespace fhamonic
 
 #endif  // FHAMONIC_KNAPSACK_DYNAMIC_PROGRAMMING_HPP

@@ -1,7 +1,7 @@
 MAKEFLAGS += --no-print-directory
 
 CPUS?=$(shell getconf _NPROCESSORS_ONLN || echo 1)
-CC:=g++-10
+CC:=g++
 
 BUILD_DIR = build
 
@@ -14,8 +14,7 @@ all: $(BUILD_DIR)
 $(BUILD_DIR):
 	@mkdir $(BUILD_DIR) && \
 	cd $(BUILD_DIR) && \
-	conan install .. && \
-	cmake -DCMAKE_CXX_COMPILER=$(CC) -DCMAKE_BUILD_TYPE=Release -DWARNINGS=ON -DCOMPILE_FOR_NATIVE=ON -DCOMPILE_WITH_LTO=ON ..
+	cmake -DCMAKE_CXX_COMPILER=$(CC) -DCMAKE_BUILD_TYPE=Release -DENABLE_TEST=ON -DENABLE_EXEC=ON -DWARNINGS=ON -DOPTIMIZE_FOR_NATIVE=ON ..
 
 test: all
 	@cd $(BUILD_DIR) && \
@@ -24,13 +23,13 @@ test: all
 clean:
 	@rm -rf $(BUILD_DIR)
 
-single-header: single-header/fhamonic/knapsack.hpp
+single-header: single-header/knapsack.hpp
 
-single-header/fhamonic/knapsack.hpp:
+single-header/knapsack.hpp:
 	@python3 -m quom --include_directory include include/all.hpp fhamonic_knapsack.hpp.tmp && \
 	mkdir -p single-header/fhamonic && \
-	echo "/*" > single-header/fhamonic/knapsack.hpp && \
-	cat LICENSE >> single-header/fhamonic/knapsack.hpp && \
-	echo "*/" >> single-header/fhamonic/knapsack.hpp && \
-	cat fhamonic_knapsack.hpp.tmp >> single-header/fhamonic/knapsack.hpp && \
+	echo "/*" > single-header/knapsack.hpp && \
+	cat LICENSE >> single-header/knapsack.hpp && \
+	echo "*/" >> single-header/knapsack.hpp && \
+	cat fhamonic_knapsack.hpp.tmp >> single-header/knapsack.hpp && \
 	rm fhamonic_knapsack.hpp.tmp

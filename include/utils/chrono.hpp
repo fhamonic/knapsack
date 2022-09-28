@@ -34,9 +34,9 @@ public:
     int time() {
         std::chrono::time_point<std::chrono::high_resolution_clock>
             current_time = std::chrono::high_resolution_clock::now();
-        return std::chrono::duration_cast<chrono_unit>(current_time -
-                                                       start_time)
-            .count();
+        return static_cast<int>(
+            std::chrono::duration_cast<chrono_unit>(current_time - start_time)
+                .count());
     }
     int timeUs() { return time<std::chrono::microseconds>(); }
     int timeMs() { return time<std::chrono::milliseconds>(); }
@@ -46,9 +46,9 @@ public:
     int lapTime() {
         std::chrono::time_point<std::chrono::high_resolution_clock>
             current_time = std::chrono::high_resolution_clock::now();
-        int time =
+        int time = static_cast<int>(
             std::chrono::duration_cast<chrono_unit>(current_time - last_time)
-                .count();
+                .count());
         last_time = current_time;
         return time;
     }

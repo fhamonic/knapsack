@@ -33,7 +33,7 @@ inline fhamonic::knapsack::Instance<int, int> parse_classic_instance(
         instance.addItem(weight, value);
     }
     int taken, opt = 0;
-    for(int i = 0; file >> taken; ++i) opt += taken * instance[i].value;
+    for(std::size_t i = 0; file >> taken; ++i) opt += taken * instance[i].value;
     return instance;
 }
 

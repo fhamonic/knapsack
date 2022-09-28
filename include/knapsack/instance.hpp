@@ -41,8 +41,8 @@ public:
     size_t itemCount() const { return items.size(); }
 
     const std::vector<Item> & getItems() const { return items; }
-    const Item getItem(int i) const { return items[i]; }
-    const Item operator[](int i) const { return getItem(i); }
+    const Item getItem(const std::size_t i) const { return items[static_cast<std::size_t>(i)]; }
+    const Item operator[](const std::size_t i) const { return items[i]; }
 };
 
 }  // namespace Knapsack

@@ -15,15 +15,15 @@ std::vector<std::pair<Knapsack::Instance<int, int>, double>> instances;
 class Environment : public ::testing::Environment {
 public:
     void SetUp() {
-        instances.emplace_back(parse_tp_instance("../instances/knapsack/sac0"),
+        instances.emplace_back(parse_tp_instance("../../instances/knapsack/sac0"),
                                103);
-        instances.emplace_back(parse_tp_instance("../instances/knapsack/sac1"),
+        instances.emplace_back(parse_tp_instance("../../instances/knapsack/sac1"),
                                2077672);
-        instances.emplace_back(parse_tp_instance("../instances/knapsack/sac2"),
+        instances.emplace_back(parse_tp_instance("../../instances/knapsack/sac2"),
                                2095878);
-        instances.emplace_back(parse_tp_instance("../instances/knapsack/sac3"),
+        instances.emplace_back(parse_tp_instance("../../instances/knapsack/sac3"),
                                2132531);
-        instances.emplace_back(parse_tp_instance("../instances/knapsack/sac4"),
+        instances.emplace_back(parse_tp_instance("../../instances/knapsack/sac4"),
                                2166542);
     }
 };

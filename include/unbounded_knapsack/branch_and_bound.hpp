@@ -7,6 +7,7 @@
 
 #include <range/v3/algorithm/remove_if.hpp>
 #include <range/v3/algorithm/sort.hpp>
+#include <range/v3/view/drop.hpp>
 #include <range/v3/view/zip.hpp>
 
 #include "unbounded_knapsack/instance.hpp"
@@ -24,10 +25,11 @@ public:
 
 private:
     double computeUpperBound(const std::vector<TItem> & sorted_items,
-                             size_t depth, Value bound_value,
+                             std::size_t depth, Value bound_value,
                              Cost bound_budget_left) {
-        for(; depth < sorted_items.size(); ++depth) {
+        for(;depth < sorted_items.size();++depth) {
             const TItem & item = sorted_items[depth];
+        // for(const TItem & item : ranges::views::drop(sorted_items, depth)) {
             if(bound_budget_left <= item.cost)
                 return bound_value + bound_budget_left * item.getRatio();
             const int nb_take = bound_budget_left / item.cost;
@@ -37,14 +39,14 @@ private:
         return bound_value;
     }
 
-    std::stack<std::pair<int, int>> iterative_bnb(
+    std::stack<std::pair<std::size_t, int>> iterative_bnb(
         const std::vector<TItem> & sorted_items, Cost budget_left) {
-        const int nb_items = sorted_items.size();
-        int depth = 0;
+        const std::size_t nb_items = sorted_items.size();
+        std::size_t depth = 0;
         Value value = 0;
         Value best_value = 0;
-        std::stack<std::pair<int, int>> stack;
-        std::stack<std::pair<int, int>> best_stack;
+        std::stack<std::pair<std::size_t, int>> stack;
+        std::stack<std::pair<std::size_t, int>> best_stack;
         goto begin;
     backtrack:
         while(!stack.empty()) {
@@ -75,7 +77,7 @@ public:
 
     TSolution solve(const TInstance & instance) {
         std::vector<TItem> sorted_items = instance.getItems();
-        std::vector<int> permuted_id(instance.itemCount());
+        std::vector<std::size_t> permuted_id(instance.itemCount());
         std::iota(permuted_id.begin(), permuted_id.end(), 0);
 
         auto zip_view = ranges::view::zip(sorted_items, permuted_id);
@@ -88,7 +90,7 @@ public:
         ranges::sort(zip_view,
                      [](auto p1, auto p2) { return p1.first < p2.first; });
 
-        std::stack<std::pair<int, int>> best_stack =
+        std::stack<std::pair<std::size_t, int>> best_stack =
             iterative_bnb(sorted_items, instance.getBudget());
 
         TSolution solution(instance);
