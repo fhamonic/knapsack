@@ -26,103 +26,55 @@ public:
     using TSolution = Solution<Value, Cost>;
 
 private:
-        double computeUpperBound(const std::vector<TItem> & sorted_items,
-                             std::size_t depth, Value bound_value,
-                             Cost bound_budget_left) {
-        for(; depth < sorted_items.size(); ++depth) {
-            const TItem & item = sorted_items[depth];
-            if(bound_budget_left < item.cost)
-                return bound_value + bound_budget_left * item.getRatio();
-            bound_budget_left -= item.cost;
-            bound_value += item.value;
+    Value computeUpperBound(auto it, const auto end, Value bound_value,
+                             Cost bound_budget_left) const noexcept {
+        for(; it < end; ++it) {
+            if(bound_budget_left < it->cost)
+                return static_cast<Value>(bound_value + bound_budget_left *
+                           it->value / static_cast<double>(it->cost));
+            bound_budget_left -= it->cost;
+            bound_value += it->value;
         }
+
         return bound_value;
     }
 
-    std::vector<std::size_t> iterative_bnb(
-        const std::vector<TItem> & sorted_items, Cost budget_left) {
-        const std::size_t nb_items = sorted_items.size();
-        std::size_t depth = 0;
-        Value value = 0;
-        Value best_value = 0;
-        std::vector<std::size_t> stack;
-        std::vector<std::size_t> best_stack;
+    auto iterative_bnb(const std::vector<TItem> & sorted_items,
+                       Cost budget_left) const noexcept {
+        Value current_sol_value = 0;
+        Value best_sol_value = 0;
+        auto it = sorted_items.cbegin();
+        const auto end = sorted_items.cend();
+        std::vector<decltype(it)> current_sol;
+        std::vector<decltype(it)> best_sol;
         goto begin;
     backtrack:
-        while(!stack.empty()) {
-            depth = stack.back();
-            stack.pop_back();
-            value -= sorted_items[depth].value;
-            budget_left += sorted_items[depth].cost;
-            for(++depth; depth < nb_items; ++depth) {
-                if(budget_left < sorted_items[depth].cost) continue;
-                if(computeUpperBound(sorted_items, depth, value, budget_left) <=
-                   best_value)
+        while(!current_sol.empty()) {
+            it = current_sol.back();
+            current_sol_value -= it->value;
+            budget_left += it->cost;
+            current_sol.pop_back();
+            for(++it; it < end; ++it) {
+                if(budget_left < it->cost) continue;
+                if(computeUpperBound(it, end, current_sol_value, budget_left) <=
+                   best_sol_value)
                     goto backtrack;
             begin:
-                value += sorted_items[depth].value;
-                budget_left -= sorted_items[depth].cost;
-                stack.push_back(depth);
+                current_sol_value += it->value;
+                budget_left -= it->cost;
+                current_sol.push_back(it);
             }
-            if(value <= best_value) continue;
-            best_value = value;
-            best_stack = stack;
+            if(current_sol_value <= best_sol_value) continue;
+            best_sol_value = current_sol_value;
+            best_sol = current_sol;
         }
-        return best_stack;
+        return best_sol;
     }
-
-
-    // double computeUpperBound(const std::vector<TItem> & sorted_items,
-    //                          auto it, Value bound_value,
-    //                          Cost bound_budget_left) {
-    //     const auto end = sorted_items.cend();
-    // for(; it < end; ++it) {
-    //         if(bound_budget_left < it->cost)
-    //             return bound_value + bound_budget_left * it->getRatio();
-    //         bound_budget_left -= it->cost;
-    //         bound_value += it->value;
-    //     }
-        
-    //     return bound_value;
-    // }
-
-    // auto iterative_bnb(const std::vector<TItem> & sorted_items,
-    //                                  Cost budget_left) {
-    //     Value value = 0;
-    //     Value best_value = 0;
-    //     std::vector<typename std::vector<TItem>::const_iterator> stack;
-    //     std::vector<typename std::vector<TItem>::const_iterator> best_stack;
-    //     auto it = sorted_items.cbegin();
-    //     const auto end = sorted_items.cend();
-    //     goto begin;
-    // backtrack:
-    //     while(!stack.empty()) {
-    //         it = stack.back();
-    //         stack.pop_back();
-    //         value -= it->value;
-    //         budget_left += it->cost;
-    //         for(++it; it < end; ++it) {
-    //             if(budget_left < it->cost)
-    //                 continue;
-    //             if(computeUpperBound(sorted_items, it, value,
-    //                                  budget_left) <= best_value)
-    //                 goto backtrack;
-    //         begin:
-    //             value += it->value;
-    //             budget_left -= it->cost;
-    //             stack.push_back(it);
-    //         }
-    //         if(value <= best_value) continue;
-    //         best_value = value;
-    //         best_stack = stack;
-    //     }
-    //     return best_stack;
-    // }
 
 public:
     BranchAndBound() {}
 
-    TSolution solve(const TInstance & instance) {
+    TSolution solve(const TInstance & instance) const noexcept {
         TSolution solution(instance);
         if(instance.itemCount() > 0) {
             std::vector<TItem> sorted_items = instance.getItems();
@@ -141,18 +93,17 @@ public:
             ranges::sort(zip_view,
                          [](auto p1, auto p2) { return p1.first < p2.first; });
 
-
-            auto best_stack =
-                iterative_bnb(sorted_items, instance.getBudget());
-            for(std::size_t i : best_stack) {
-                solution.add(permuted_id[i]); 
-            }
-
-
-            // auto best_stack = iterative_bnb(sorted_items, instance.getBudget());
-            // for(auto && it : best_stack) {
-            //     solution.add(permuted_id[static_cast<std::size_t>(std::distance(sorted_items.cbegin(), it))]);
+            // auto best_sol =
+            //     iterative_bnb(sorted_items, instance.getBudget());
+            // for(std::size_t i : best_sol) {
+            //     solution.add(permuted_id[i]);
             // }
+
+            auto best_sol = iterative_bnb(sorted_items, instance.getBudget());
+            for(auto && it : best_sol) {
+                solution.add(permuted_id[static_cast<std::size_t>(
+                    std::distance(sorted_items.cbegin(), it))]);
+            }
         }
         return solution;
     }
