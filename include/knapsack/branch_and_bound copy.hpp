@@ -21,12 +21,12 @@ namespace knapsack {
 template <typename V, typename C>
 class knapsack_bnb {
 private:
-    double value_cost_ratio(const std::pair<V, C> & p) {
-        if constexpr(std::numeric_limits<float>::is_iec559()) {
-            return p.first / p.second;
+    double value_cost_ratio(const std::pair<V, C> & p) const noexcept {
+        if constexpr(std::numeric_limits<float>::is_iec559) {
+            return p.first / static_cast<double>(p.second);
         } else {
             return (p.second == 0) ? std::numeric_limits<double>::max()
-                                   : (p.first / p.second);
+                                   : (p.first / static_cast<double>(p.second));
         }
     }
 

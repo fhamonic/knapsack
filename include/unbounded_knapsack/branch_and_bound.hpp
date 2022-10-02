@@ -24,58 +24,53 @@ public:
     using TSolution = Solution<Value, Cost>;
 
 private:
-    double computeUpperBound(const std::vector<TItem> & sorted_items,
-                             std::size_t depth, Value bound_value,
-                             Cost bound_budget_left) {
-        for(;depth < sorted_items.size();++depth) {
-            const TItem & item = sorted_items[depth];
-        // for(const TItem & item : ranges::views::drop(sorted_items, depth)) {
-            if(bound_budget_left <= item.cost)
-                return bound_value + bound_budget_left * item.getRatio();
-            const int nb_take = bound_budget_left / item.cost;
-            bound_budget_left -= nb_take * item.cost;
-            bound_value += nb_take * item.value;
+    double value_cost_ratio(const TItem & p) const noexcept {
+        if constexpr(std::numeric_limits<float>::is_iec559) {
+            return p.value / static_cast<double>(p.cost);
+        } else {
+            return (p.cost == 0) ? std::numeric_limits<double>::max()
+                                 : (p.value / static_cast<double>(p.cost));
         }
-        return bound_value;
     }
 
-    std::stack<std::pair<std::size_t, int>> iterative_bnb(
-        const std::vector<TItem> & sorted_items, Cost budget_left) {
-        const std::size_t nb_items = sorted_items.size();
-        std::size_t depth = 0;
-        Value value = 0;
-        Value best_value = 0;
-        std::stack<std::pair<std::size_t, int>> stack;
-        std::stack<std::pair<std::size_t, int>> best_stack;
+    auto iterative_bnb(const std::vector<TItem> & sorted_items,
+                       Cost budget_left) const noexcept {
+        Value current_sol_value = 0;
+        Value best_sol_value = 0;
+        auto it = sorted_items.cbegin();
+        const auto end = sorted_items.cend();
+        std::vector<std::pair<decltype(it), std::size_t>> current_sol;
+        std::vector<std::pair<decltype(it), std::size_t>> best_sol;
         goto begin;
     backtrack:
-        while(!stack.empty()) {
-            depth = stack.top().first;
-            if(--stack.top().second == 0) stack.pop();
-            value -= sorted_items[depth].value;
-            budget_left += sorted_items[depth++].cost;
-            for(; depth < nb_items; ++depth) {
-                if(budget_left < sorted_items[depth].cost) continue;
-                if(computeUpperBound(sorted_items, depth, value, budget_left) <=
-                   best_value)
+        while(!current_sol.empty()) {
+            it = current_sol.back().first;
+            if(--current_sol.back().second == 0) current_sol.pop_back();
+            current_sol_value -= it->value;
+            budget_left += it->cost;
+            for(++it; it < end; ++it) {
+                if(budget_left < it->cost) continue;
+                if(current_sol_value + budget_left * value_cost_ratio(*it) <=
+                   best_sol_value)
                     goto backtrack;
             begin:
-                const int nb_take = budget_left / sorted_items[depth].cost;
-                value += nb_take * sorted_items[depth].value;
-                budget_left -= nb_take * sorted_items[depth].cost;
-                stack.emplace(depth, nb_take);
+                const std::size_t nb_take =
+                    static_cast<std::size_t>(budget_left / it->cost);
+                current_sol_value += static_cast<Value>(nb_take) * it->value;
+                budget_left -= static_cast<Cost>(nb_take) * it->cost;
+                current_sol.emplace_back(it, nb_take);
             }
-            if(value <= best_value) continue;
-            best_value = value;
-            best_stack = stack;
+            if(current_sol_value <= best_sol_value) continue;
+            best_sol_value = current_sol_value;
+            best_sol = current_sol;
         }
-        return best_stack;
+        return best_sol;
     }
 
 public:
     BranchAndBound() {}
 
-    TSolution solve(const TInstance & instance) {
+    TSolution solve(const TInstance & instance) const noexcept {
         std::vector<TItem> sorted_items = instance.getItems();
         std::vector<std::size_t> permuted_id(instance.itemCount());
         std::iota(permuted_id.begin(), permuted_id.end(), 0);
@@ -87,18 +82,19 @@ public:
         const ptrdiff_t new_size = std::distance(zip_view.begin(), end);
         sorted_items.erase(sorted_items.begin() + new_size, sorted_items.end());
         permuted_id.erase(permuted_id.begin() + new_size, permuted_id.end());
-        ranges::sort(zip_view,
-                     [](auto p1, auto p2) { return p1.first < p2.first; });
-
-        std::stack<std::pair<std::size_t, int>> best_stack =
-            iterative_bnb(sorted_items, instance.getBudget());
+        ranges::sort(zip_view, [this](auto p1, auto p2) {
+            return value_cost_ratio(p1.first) > value_cost_ratio(p2.first);
+        });
 
         TSolution solution(instance);
-        while(!best_stack.empty()) {
-            solution.set(permuted_id[best_stack.top().first],
-                         best_stack.top().second);
-            best_stack.pop();
+
+        auto best_sol = iterative_bnb(sorted_items, instance.getBudget());
+        for(auto && [it, nb] : best_sol) {
+            solution.set(permuted_id[static_cast<std::size_t>(
+                             std::distance(sorted_items.cbegin(), it))],
+                         nb);
         }
+
         return solution;
     }
 };

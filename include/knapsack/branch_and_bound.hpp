@@ -93,12 +93,6 @@ public:
             ranges::sort(zip_view,
                          [](auto p1, auto p2) { return p1.first < p2.first; });
 
-            // auto best_sol =
-            //     iterative_bnb(sorted_items, instance.getBudget());
-            // for(std::size_t i : best_sol) {
-            //     solution.add(permuted_id[i]);
-            // }
-
             auto best_sol = iterative_bnb(sorted_items, instance.getBudget());
             for(auto && it : best_sol) {
                 solution.add(permuted_id[static_cast<std::size_t>(
