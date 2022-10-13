@@ -72,7 +72,7 @@ int main(int argc, const char * argv[]) {
             return i.cost;
         });
 
-    knapsack.solve_jthread(1);
+    knapsack.solve_jthread(std::chrono::hours(1));
 
     int time_us = chrono.timeUs();
 
