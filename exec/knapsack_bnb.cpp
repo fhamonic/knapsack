@@ -72,7 +72,7 @@ int main(int argc, const char * argv[]) {
             return i.cost;
         });
 
-    knapsack.solve(30);
+    knapsack.solve_jthread(1);
 
     int time_us = chrono.timeUs();
 

@@ -7,7 +7,6 @@
 #include <iterator>
 #include <numeric>
 #include <ranges>
-#include <thread>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -90,8 +89,7 @@ private:
         }
     }
 
-    bool iterative_bnb_async_timeout(
-        const std::atomic<bool> & b_continue) noexcept {
+    bool iterative_bnb_timeout(const std::atomic<bool> & b_continue) noexcept {
         _best_sol.clear();
         auto it = _value_cost_pairs.cbegin();
         const auto end = _value_cost_pairs.cend();
@@ -103,73 +101,6 @@ private:
         goto begin;
     backtrack:
         while(!current_sol.empty() && b_continue.load()) {
-            it = current_sol.back();
-            current_sol_value -= it->first;
-            budget_left += it->second;
-            current_sol.pop_back();
-            for(++it; it < end; ++it) {
-                if(budget_left < it->second) continue;
-                if(computeUpperBound(it, end, current_sol_value, budget_left) <=
-                   best_sol_value)
-                    goto backtrack;
-            begin:
-                current_sol_value += it->first;
-                budget_left -= it->second;
-                current_sol.push_back(it);
-            }
-            if(current_sol_value <= best_sol_value) continue;
-            best_sol_value = current_sol_value;
-            _best_sol = current_sol;
-        }
-        return current_sol.empty();
-    }
-    bool iterative_bnb_jthread_timeout(std::stop_token & stoken) noexcept {
-        _best_sol.clear();
-        auto it = _value_cost_pairs.cbegin();
-        const auto end = _value_cost_pairs.cend();
-        if(it == end) return true;
-        std::vector<decltype(it)> current_sol;
-        V current_sol_value = 0;
-        V best_sol_value = 0;
-        C budget_left = _budget;
-        goto begin;
-    backtrack:
-        while(!current_sol.empty() && !stoken.stop_requested()) {
-            it = current_sol.back();
-            current_sol_value -= it->first;
-            budget_left += it->second;
-            current_sol.pop_back();
-            for(++it; it < end; ++it) {
-                if(budget_left < it->second) continue;
-                if(computeUpperBound(it, end, current_sol_value, budget_left) <=
-                   best_sol_value)
-                    goto backtrack;
-            begin:
-                current_sol_value += it->first;
-                budget_left -= it->second;
-                current_sol.push_back(it);
-            }
-            if(current_sol_value <= best_sol_value) continue;
-            best_sol_value = current_sol_value;
-            _best_sol = current_sol;
-        }
-        return current_sol.empty();
-    }
-    bool iterative_bnb_chrono_timeout(
-        const std::chrono::time_point<std::chrono::steady_clock>
-            deadline) noexcept {
-        _best_sol.clear();
-        auto it = _value_cost_pairs.cbegin();
-        const auto end = _value_cost_pairs.cend();
-        if(it == end) return true;
-        std::vector<decltype(it)> current_sol;
-        V current_sol_value = 0;
-        V best_sol_value = 0;
-        C budget_left = _budget;
-        goto begin;
-    backtrack:
-        while(!current_sol.empty() &&
-              (std::chrono::steady_clock::now() < deadline)) {
             it = current_sol.back();
             current_sol_value -= it->first;
             budget_left += it->second;
@@ -216,7 +147,7 @@ public:
     }
 
     void solve() noexcept { iterative_bnb(); }
-    bool solve_async(auto timeout_s) noexcept {
+    bool solve(auto timeout_s) noexcept {
         if(timeout_s == 0) {
             solve();
             return true;
@@ -224,7 +155,7 @@ public:
         std::atomic<bool> b_continue = true;
         std::future<bool> b_future(
             std::async(std::launch::async, [this, &b_continue]() {
-                return iterative_bnb_async_timeout(b_continue);
+                return iterative_bnb_timeout(b_continue);
             }));
 
         if(b_future.wait_for(std::chrono::seconds(timeout_s)) ==
@@ -233,32 +164,6 @@ public:
         }
         b_future.wait();
         return b_future.get();
-    }
-    bool solve_jthread(auto timeout_s) noexcept {
-        if(timeout_s == 0) {
-            solve();
-            return true;
-        }
-        std::jthread t([this](std::stop_token stoken) {
-            return iterative_bnb_jthread_timeout(stoken);
-        });
-
-        auto future = std::async(std::launch::async, &std::jthread::join, &t);
-        if(future.wait_for(std::chrono::seconds(timeout_s)) ==
-           std::future_status::timeout) {
-            t.request_stop();
-            return false;
-        }
-        return true;
-    }
-    bool solve_chrono(auto timeout_s) noexcept {
-        if(timeout_s == 0) {
-            solve();
-            return true;
-        }
-        bool finished_in_time = iterative_bnb_chrono_timeout(
-            std::chrono::steady_clock::now() + std::chrono::seconds(timeout_s));
-        return finished_in_time;
     }
 
     auto solution() const noexcept {
