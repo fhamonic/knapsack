@@ -29,7 +29,7 @@ public:
 
 private:
     Cost budget;
-    std::vector<Item> items;
+    std::vector<Item> _items;
 
 public:
     Instance() {}
@@ -37,12 +37,13 @@ public:
     void setBudget(Cost b) { budget = b; }
     Cost getBudget() const { return budget; }
 
-    void addItem(Value v, Cost w) { items.push_back(Item(v, w)); }
-    size_t itemCount() const { return items.size(); }
+    void addItem(Value v, Cost w) { _items.push_back(Item(v, w)); }
+    size_t itemCount() const { return _items.size(); }
+    auto items() const { return _items; }
 
-    const std::vector<Item> & getItems() const { return items; }
-    const Item getItem(const std::size_t i) const { return items[static_cast<std::size_t>(i)]; }
-    const Item operator[](const std::size_t i) const { return items[i]; }
+    const std::vector<Item> & getItems() const { return _items; }
+    const Item getItem(const std::size_t i) const { return _items[static_cast<std::size_t>(i)]; }
+    const Item operator[](const std::size_t i) const { return _items[i]; }
 };
 
 }  // namespace Knapsack
