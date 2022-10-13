@@ -58,11 +58,12 @@ int main(int argc, const char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    Knapsack::Instance instance = parse_tp_instance(instance_path);
+    // Knapsack::Instance instance = parse_tp_instance(instance_path);
+    Knapsack::Instance instance = parse_classic_instance(instance_path);
 
     Chrono chrono;
 
-    const auto knapsack = Knapsack::knapsack_bnb(
+    auto knapsack = Knapsack::knapsack_bnb(
         instance.getBudget(), instance.items(),
         [&instance](const Knapsack::Instance<int, int>::Item & i) {
             return i.value;
@@ -71,9 +72,11 @@ int main(int argc, const char * argv[]) {
             return i.cost;
         });
 
+    knapsack.solve(30);
+
     int time_us = chrono.timeUs();
 
-    double solution_value = 0;
+    int solution_value = 0;
     for(auto && i : knapsack.solution()) {     
         // std::cout << i.value << " " << i.cost << std::endl;
         solution_value += i.value;
