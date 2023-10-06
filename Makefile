@@ -12,9 +12,9 @@ all: $(BUILD_DIR)
 	cmake --build . --parallel $(CPUS)
 
 $(BUILD_DIR):
-	@mkdir $(BUILD_DIR) && \
+	@conan install . -of=${BUILD_DIR} -b=missing -pr=default && \
 	cd $(BUILD_DIR) && \
-	cmake -DCMAKE_CXX_COMPILER=$(CC) -DCMAKE_BUILD_TYPE=Release -DENABLE_TEST=ON -DENABLE_EXEC=ON -DWARNINGS=ON -DOPTIMIZE_FOR_NATIVE=ON ..
+	cmake -DCMAKE_CXX_COMPILER=$(CC) -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DENABLE_EXEC=ON -DOPTIMIZE_FOR_NATIVE=ON ..
 
 test: all
 	@cd $(BUILD_DIR) && \
