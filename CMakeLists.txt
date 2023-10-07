@@ -30,7 +30,7 @@ find_package(range-v3)
 # ################## LIB target ###################
 add_library(knapsack INTERFACE)
 target_include_directories(
-    knapsack INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    knapsack INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/exec>
                        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_link_libraries(knapsack INTERFACE range-v3::range-v3)
 

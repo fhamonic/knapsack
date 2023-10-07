@@ -20,8 +20,8 @@ int main(int argc, const char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    // Instance instance = parse_tp_instance(instance_path);
-    Instance instance = parse_classic_instance(instance_path);
+    Instance instance = parse_tp_instance(instance_path);
+    // Instance instance = parse_classic_instance(instance_path);
 
     Chrono chrono;
 
@@ -34,8 +34,8 @@ int main(int argc, const char * argv[]) {
             return i.cost;
         });
 
-    // knapsack.solve();
-    knapsack.solve(std::chrono::hours(1));
+    knapsack.solve();
+    // knapsack.solve(std::chrono::seconds(10));
 
     int time_us = chrono.timeUs();
 

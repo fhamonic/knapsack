@@ -1,7 +1,6 @@
 MAKEFLAGS += --no-print-directory
 
 CPUS?=$(shell getconf _NPROCESSORS_ONLN || echo 1)
-CC:=g++
 
 BUILD_DIR = build
 
@@ -14,12 +13,15 @@ all: $(BUILD_DIR)
 $(BUILD_DIR):
 	@conan install . -of=${BUILD_DIR} -b=missing -pr=default && \
 	cd $(BUILD_DIR) && \
-	cmake -DCMAKE_CXX_COMPILER=$(CC) -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DENABLE_EXEC=ON -DOPTIMIZE_FOR_NATIVE=ON ..
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DENABLE_EXEC=ON -DOPTIMIZE_FOR_NATIVE=ON ..
 
 test: all
 	@cd $(BUILD_DIR) && \
 	ctest --output-on-failure
 	
+package:
+	conan create . -u
+
 clean:
 	@rm -rf $(BUILD_DIR)
 

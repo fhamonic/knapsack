@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <iostream>
 
-#include "knapsack/dynamic_programming.hpp"
+#include "knapsack/knapsack_dp.hpp"
 
 #include "utils/chrono.hpp"
 #include "utils/instance_parsers.hpp"
@@ -20,15 +20,30 @@ int main(int argc, const char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    Instance instance = parse_tp_instance(instance_path);
-    // Instance instance = parse_classic_instance(instance_path);
-    Knapsack::DynamicProgramming<int, int> solver;
+    // Instance instance = parse_tp_instance(instance_path);
+    Instance instance = parse_classic_instance(instance_path);
 
     Chrono chrono;
-    Knapsack::Solution solution = solver.solve(instance);
+
+    auto knapsack = Knapsack::knapsack_dp(
+        instance.getBudget(), instance.items(),
+        [&instance](const Instance<int, int>::Item & i) {
+            return i.value;
+        },
+        [&instance](const Instance<int, int>::Item & i) {
+            return i.cost;
+        });
+
+    knapsack.solve();
+
     int time_us = chrono.timeUs();
 
-    std::cout << solution.getValue() << " in " << time_us << " µs" << std::endl;
+    int solution_value = 0;
+    for(auto && i : knapsack.solution()) {     
+        // std::cout << i.value << " " << i.cost << std::endl;
+        solution_value += i.value;
+    }
+    std::cout << solution_value << " in " << time_us << " µs" << std::endl;
 
     return EXIT_SUCCESS;
 }
