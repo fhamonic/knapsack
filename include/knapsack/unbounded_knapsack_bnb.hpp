@@ -1,7 +1,6 @@
-#ifndef FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP
-#define FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP
+#ifndef UBOUNDED_FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP
+#define UBOUNDED_FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP
 
-#include <atomic>
 #include <chrono>
 #include <future>
 #include <iterator>
@@ -16,14 +15,11 @@
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/zip.hpp>
 
-#include "knapsack/instance.hpp"
-#include "knapsack/solution.hpp"
-
 namespace fhamonic {
 namespace knapsack {
 
 template <typename C, typename RI, typename VM, typename CM>
-class knapsack_bnb {
+class unbounded_knapsack_bnb {
 private:
     using I = std::ranges::range_value_t<RI>;
     using V = std::invoke_result_t<VM, I>;
@@ -31,7 +27,8 @@ private:
     C _budget;
     std::vector<I> _permuted_items;
     std::vector<std::pair<V, C>> _value_cost_pairs;
-    std::vector<typename std::vector<std::pair<V, C>>::const_iterator>
+    std::vector<std::pair<typename std::vector<std::pair<V, C>>::const_iterator,
+                          std::size_t>>
         _best_sol;
 
 private:
@@ -44,87 +41,77 @@ private:
         }
     }
 
-    V computeUpperBound(auto it, const auto end, V bound_value,
-                        C bound_budget_left) const noexcept {
-        for(; it < end; ++it) {
-            if(bound_budget_left < it->second)
-                return static_cast<V>(bound_value +
-                                      bound_budget_left * it->first /
-                                          static_cast<double>(it->second));
-            bound_budget_left -= it->second;
-            bound_value += it->first;
-        }
-
-        return bound_value;
-    }
-
-    void iterative_bnb() noexcept {
-        _best_sol.clear();
+    auto iterative_bnb() noexcept {
+        _best_sol.resize(0);
         auto it = _value_cost_pairs.cbegin();
         const auto end = _value_cost_pairs.cend();
-        if(it == end) return;
-        std::vector<decltype(it)> current_sol;
+        std::vector<std::pair<decltype(it), std::size_t>> current_sol;
         V current_sol_value = 0;
         V best_sol_value = 0;
         C budget_left = _budget;
         goto begin;
     backtrack:
         while(!current_sol.empty()) {
-            it = current_sol.back();
+            it = current_sol.back().first;
+            if(--current_sol.back().second == 0) current_sol.pop_back();
             current_sol_value -= it->first;
             budget_left += it->second;
-            current_sol.pop_back();
             for(++it; it < end; ++it) {
                 if(budget_left < it->second) continue;
-                if(computeUpperBound(it, end, current_sol_value, budget_left) <=
+                if(current_sol_value + budget_left * value_cost_ratio(*it) <=
                    best_sol_value)
                     goto backtrack;
             begin:
-                current_sol_value += it->first;
-                budget_left -= it->second;
-                current_sol.push_back(it);
+                const std::size_t nb_take =
+                    static_cast<std::size_t>(budget_left / it->second);
+                current_sol_value += static_cast<V>(nb_take) * it->first;
+                budget_left -= static_cast<C>(nb_take) * it->second;
+                current_sol.emplace_back(it, nb_take);
             }
             if(current_sol_value <= best_sol_value) continue;
             best_sol_value = current_sol_value;
             _best_sol = current_sol;
         }
+        return _best_sol;
     }
-    bool iterative_bnb_timeout(std::stop_token stoken) noexcept {
-        _best_sol.clear();
+
+    auto iterative_bnb_timeout(std::stop_token stoken) noexcept {
+        _best_sol.resize(0);
         auto it = _value_cost_pairs.cbegin();
         const auto end = _value_cost_pairs.cend();
-        if(it == end) return true;
-        std::vector<decltype(it)> current_sol;
+        std::vector<std::pair<decltype(it), std::size_t>> current_sol;
         V current_sol_value = 0;
         V best_sol_value = 0;
         C budget_left = _budget;
         goto begin;
     backtrack:
         while(!current_sol.empty() && !stoken.stop_requested()) {
-            it = current_sol.back();
+            it = current_sol.back().first;
+            if(--current_sol.back().second == 0) current_sol.pop_back();
             current_sol_value -= it->first;
             budget_left += it->second;
-            current_sol.pop_back();
             for(++it; it < end; ++it) {
                 if(budget_left < it->second) continue;
-                if(computeUpperBound(it, end, current_sol_value, budget_left) <=
+                if(current_sol_value + budget_left * value_cost_ratio(*it) <=
                    best_sol_value)
                     goto backtrack;
             begin:
-                current_sol_value += it->first;
-                budget_left -= it->second;
-                current_sol.push_back(it);
+                const std::size_t nb_take =
+                    static_cast<std::size_t>(budget_left / it->second);
+                current_sol_value += static_cast<V>(nb_take) * it->first;
+                budget_left -= static_cast<C>(nb_take) * it->second;
+                current_sol.emplace_back(it, nb_take);
             }
             if(current_sol_value <= best_sol_value) continue;
             best_sol_value = current_sol_value;
             _best_sol = current_sol;
         }
-        return current_sol.empty();
+        return _best_sol;
     }
 
 public:
-    knapsack_bnb(const C budget, const RI & items, const VM & value_map,
-                 const CM & cost_map) noexcept
+    unbounded_knapsack_bnb(const C budget, const RI & items,
+                           const VM & value_map, const CM & cost_map) noexcept
         : _budget(budget) {
         if constexpr(std::ranges::sized_range<RI>) {
             _permuted_items.reserve(std::ranges::size(items));
@@ -147,9 +134,9 @@ public:
     }
 
     void solve() noexcept { iterative_bnb(); }
-
-    template<typename _Rep, typename _Period>
-    bool solve_jthread(const std::chrono::duration<_Rep, _Period>& timeout) noexcept {
+    
+    template <typename _Rep, typename _Period>
+    bool solve(const std::chrono::duration<_Rep, _Period> & timeout) noexcept {
         if(timeout == timeout.zero()) {
             solve();
             return true;
@@ -160,8 +147,7 @@ public:
         // C++23 should allow to call jthread from future and prevent launching
         // the supplementary thread for join
         auto future = std::async(std::launch::async, &std::jthread::join, &t);
-        if(future.wait_for(timeout) ==
-           std::future_status::timeout) {
+        if(future.wait_for(timeout) == std::future_status::timeout) {
             t.request_stop();
             return false;
         }
@@ -169,13 +155,16 @@ public:
     }
 
     auto solution() const noexcept {
-        return std::ranges::views::transform(_best_sol, [this](auto && it) {
-            return _permuted_items[static_cast<std::size_t>(
-                std::distance(_value_cost_pairs.cbegin(), it))];
+        return std::ranges::views::transform(_best_sol, [this](auto & p) {
+            return std::make_pair(
+                _permuted_items[static_cast<std::size_t>(
+                    std::distance(_value_cost_pairs.cbegin(), p.first))],
+                p.second);
         });
     }
 };
+
 }  // namespace knapsack
 }  // namespace fhamonic
 
-#endif  // FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP
+#endif  // UBOUNDED_FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP

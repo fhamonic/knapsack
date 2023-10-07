@@ -7,7 +7,6 @@
 
 #include <range/v3/view/reverse.hpp>
 
-#include "knapsack/instance.hpp"
 #include "knapsack/solution.hpp"
 
 namespace fhamonic {

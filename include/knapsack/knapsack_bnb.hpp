@@ -1,12 +1,12 @@
 #ifndef FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP
 #define FHAMONIC_KNAPSACK_BRANCH_AND_BOUND_HPP
 
-#include <atomic>
 #include <chrono>
 #include <future>
 #include <iterator>
 #include <numeric>
 #include <ranges>
+#include <thread>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -14,9 +14,6 @@
 #include <range/v3/algorithm/sort.hpp>
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/zip.hpp>
-
-#include "knapsack/instance.hpp"
-#include "knapsack/solution.hpp"
 
 namespace fhamonic {
 namespace knapsack {
@@ -58,7 +55,7 @@ private:
     }
 
     void iterative_bnb() noexcept {
-        _best_sol.clear();
+        _best_sol.resize(0);
         auto it = _value_cost_pairs.cbegin();
         const auto end = _value_cost_pairs.cend();
         if(it == end) return;
@@ -88,9 +85,8 @@ private:
             _best_sol = current_sol;
         }
     }
-
-    bool iterative_bnb_timeout(const std::atomic<bool> & b_continue) noexcept {
-        _best_sol.clear();
+    bool iterative_bnb_timeout(std::stop_token stoken) noexcept {
+        _best_sol.resize(0);
         auto it = _value_cost_pairs.cbegin();
         const auto end = _value_cost_pairs.cend();
         if(it == end) return true;
@@ -100,7 +96,7 @@ private:
         C budget_left = _budget;
         goto begin;
     backtrack:
-        while(!current_sol.empty() && b_continue.load()) {
+        while(!current_sol.empty() && !stoken.stop_requested()) {
             it = current_sol.back();
             current_sol_value -= it->first;
             budget_left += it->second;
@@ -147,23 +143,24 @@ public:
     }
 
     void solve() noexcept { iterative_bnb(); }
-    bool solve(auto timeout_s) noexcept {
-        if(timeout_s == 0) {
+
+    template <typename _Rep, typename _Period>
+    bool solve(const std::chrono::duration<_Rep, _Period> & timeout) noexcept {
+        if(timeout == timeout.zero()) {
             solve();
             return true;
         }
-        std::atomic<bool> b_continue = true;
-        std::future<bool> b_future(
-            std::async(std::launch::async, [this, &b_continue]() {
-                return iterative_bnb_timeout(b_continue);
-            }));
-
-        if(b_future.wait_for(std::chrono::seconds(timeout_s)) ==
-           std::future_status::timeout) {
-            b_continue.store(false);
+        std::jthread t([this](std::stop_token stoken) {
+            return iterative_bnb_timeout(stoken);
+        });
+        // C++23 should allow to call jthread from future and prevent launching
+        // the supplementary thread for join
+        auto future = std::async(std::launch::async, &std::jthread::join, &t);
+        if(future.wait_for(timeout) == std::future_status::timeout) {
+            t.request_stop();
+            return false;
         }
-        b_future.wait();
-        return b_future.get();
+        return true;
     }
 
     auto solution() const noexcept {

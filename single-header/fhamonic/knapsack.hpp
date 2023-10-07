@@ -307,7 +307,7 @@ namespace fhamonic {
 namespace unbounded_knapsack {
 
 template <typename Value, typename Cost>
-using Instance = knapsack::Instance<Value, Cost>;
+using Instance = Instance<Value, Cost>;
 
 }  // namespace unbounded_knapsack
 }  // namespace fhamonic

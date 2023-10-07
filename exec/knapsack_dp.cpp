@@ -20,8 +20,8 @@ int main(int argc, const char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    Knapsack::Instance instance = parse_tp_instance(instance_path);
-    // Knapsack::Instance instance = parse_classic_instance(instance_path);
+    Instance instance = parse_tp_instance(instance_path);
+    // Instance instance = parse_classic_instance(instance_path);
     Knapsack::DynamicProgramming<int, int> solver;
 
     Chrono chrono;

@@ -10,7 +10,7 @@
 namespace Knapsack = fhamonic::knapsack;
 namespace UnboundedKnapsack = fhamonic::unbounded_knapsack;
 
-std::vector<std::pair<Knapsack::Instance<int, int>, double>> instances;
+std::vector<std::pair<Instance<int, int>, double>> instances;
 
 class Environment : public ::testing::Environment {
 public:

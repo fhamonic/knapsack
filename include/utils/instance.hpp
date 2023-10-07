@@ -4,9 +4,6 @@
 #include <limits>
 #include <vector>
 
-namespace fhamonic {
-namespace knapsack {
-
 template <typename Value, typename Cost>
 class Instance {
 public:
@@ -45,8 +42,5 @@ public:
     const Item getItem(const std::size_t i) const { return _items[static_cast<std::size_t>(i)]; }
     const Item operator[](const std::size_t i) const { return _items[i]; }
 };
-
-}  // namespace Knapsack
-}  // namespace fhamonic
 
 #endif  // FHAMONIC_KNAPSACK_INSTANCE_HPP

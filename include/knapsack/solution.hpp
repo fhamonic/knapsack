@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "instance.hpp"
+#include "utils/instance.hpp"
 
 namespace fhamonic {
 namespace knapsack {
