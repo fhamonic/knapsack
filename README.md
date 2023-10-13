@@ -19,3 +19,28 @@ Just
 
     make
     
+## Code example
+
+```cpp
+struct Item {
+    double cost, value;
+};
+std::vector<Item> items = ...;
+double budget = ...;
+...
+auto knapsack = knapsack_bnb(budget, items,
+        [](const Item & i) {
+            return i.value;
+        },
+        [](const Item & i) {
+            return i.cost;
+        });
+
+knapsack.solve();
+// knapsack.solve(std::chrono::seconds(10)); // or solve with timeout
+
+double solution_value = 0.0;
+for(const Item & i : knapsack.solution()) {
+    solution_value += i.value;
+}
+```
