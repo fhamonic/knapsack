@@ -1,4 +1,5 @@
-Algorithms has been included to https://github.com/fhamonic/melon
+> [!NOTE]  
+> Algorithms has been included to https://github.com/fhamonic/melon
 
 # Knapsack
 
