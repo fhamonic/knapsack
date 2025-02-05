@@ -1,3 +1,5 @@
+Algorithms has been included to https://github.com/fhamonic/melon
+
 # Knapsack
 
 Efficient implementations of simple branch and bound and dynamic programming algorithms for 0-1 and unbounded Knapsack problems.
